@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Ranking {
+  name      String
+  code      String    @id
+  date      DateTime  @default(now())
+  creator   String    
+  accuracy  Float     @default(0)
+  public    Boolean   @default(false)
+  items     Item[]
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  name      String  
+  times     Int       @default(0)
+  points    Int       @default(1000)
+
+  rankingCode String
+  ranking Ranking @relation(fields: [rankingCode], references: [code])
+}
