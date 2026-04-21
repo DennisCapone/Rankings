@@ -6,8 +6,6 @@ import { addRanking } from "../actions";
 import { useRouter } from 'next/navigation';
 
 export default function Create() {
-  var code = ""
-  for (var ind=0;ind<8;ind++) code += String.fromCharCode((Math.floor(Math.random() * (90-65+1) + 65)))
   const router = useRouter()
 
   const [items, setItems] = useState(['', ''])
@@ -25,6 +23,8 @@ export default function Create() {
   }
   
   const Save = async () => {
+    let code = ""
+    for (let ind = 0; ind < 8; ind++) code += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
     await addRanking(code, items, name)
     router.push(`/share/${code}`)
   }
