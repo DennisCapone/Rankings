@@ -6,12 +6,12 @@ import { addRanking } from "../actions";
 import { useRouter } from 'next/navigation';
 
 export default function Create() {
-  const [code, setcode] = useState("")
+  const [code, setCode] = useState("")
   useEffect(() => {
       let tempCode = ""
       for (let ind = 0; ind < 8; ind++) tempCode += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
       setCode(tempCode)
-   }
+   }, [])
   const router = useRouter()
 
   const [items, setItems] = useState(['', ''])
