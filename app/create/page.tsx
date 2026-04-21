@@ -1,17 +1,11 @@
 "use client";
 import Button from '../../components/Button';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { addRanking } from "../actions";
 import { useRouter } from 'next/navigation';
 
 export default function Create() {
-  const [code, setCode] = useState("")
-  useEffect(() => {
-      let tempCode = ""
-      for (let ind = 0; ind < 8; ind++) tempCode += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
-      setCode(tempCode)
-   }, [])
   const router = useRouter()
 
   const [items, setItems] = useState(['', ''])
@@ -29,6 +23,8 @@ export default function Create() {
   }
   
   const Save = async () => {
+    let code = ""
+    for (let ind = 0; ind < 8; ind++) code += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
     await addRanking(code, items, name)
     router.push(`/share/${code}`)
   }
