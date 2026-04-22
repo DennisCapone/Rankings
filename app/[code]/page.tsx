@@ -1,8 +1,7 @@
 import Button from "@/components/Button"
 import Link from "next/link"
-import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { checkCode } from "@/App/actions"
+import { checkCode } from "@/app/actions"
 
 export default async function Play({params} : {params: Promise<{code:string}>}) {
   const { code } = await params      // Take the code from the url //
