@@ -22,3 +22,27 @@ model Item {
   probability Int     @default(0)
   ranking     Ranking @relation(fields: [rankingCode], references: [code])
 }
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+}
+model Ranking {
+  name     String
+  code     String   @id
+  date     DateTime @default(now())
+  creator  String
+  accuracy Float    @default(0)
+  public   Boolean  @default(false)
+  elements Int?     @db.SmallInt
+  items    Item[]
+}
+model Item {
+  id          BigInt  @id @default(autoincrement())
+  name        String
+  points      Int     @default(1000)
+  rankingCode String
+  probability Int     @default(0)
+  ranking     Ranking @relation(fields: [rankingCode], references: [code])
+}
