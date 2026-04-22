@@ -1,5 +1,5 @@
 "use client";
-import Button from '../../components/Button';
+import Button from '@/components/Button';
 import Link from 'next/link';
 import { useState } from 'react';
 import { addRanking } from "../actions";
@@ -9,16 +9,16 @@ export default function Create() {
   const [items, setItems] = useState(['', ''])
   const [name, setName] = useState('')
   const router = useRouter()
-  const add = () => {if (items[items.length-1] !== "" && items[0] !== "") setItems([...items, ""])}
-  const remove = (index:number) => {if (items.length > 2)setItems(items.filter((_, i) => i !== index))}
-  const handleNameChange = (value:string) =>{setName(value)}
-  const handleChange = (value:string, index:number) => {
+  const add = () => {if (items[items.length-1] !== "" && items[0] !== "") setItems([...items, ""])}        // Adding element to the array //
+  const remove = (index:number) => {if (items.length > 2)setItems(items.filter((_, i) => i !== index))}    // Remove element from the array //
+  const handleNameChange = (value:string) =>{setName(value)}                                               // Handle the change of the name //
+  const handleChange = (value:string, index:number) => {                                                   // Handle the change of the elements //
     const newItems = [...items]
     newItems[index] = value
     setItems(newItems)
     if (value == "") remove(index)}
-  const Save = async () => {
-    const code = await addRanking(items, name)
+  const Save = async () => {                                                      /** Save the ranking in the database
+    const code = await addRanking(items, name)                                      and go to the share link page */
     router.push(`/share/${code}`)}
   
   return (
