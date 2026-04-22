@@ -6,19 +6,9 @@ import { notFound } from "next/navigation";
 export default async function Play({params} : {params: Promise<{code:string}>}) {
   const { code } = await params
     const ranking = await db.ranking.findUnique({
-      where: {
-        code: code,
-      },
-      include: {
-          items: {
-              orderBy: {
-                  points: "desc"
-              }
-          }
-      }
-    })
+      where: {code: code,},
+      include: {items: {orderBy: {points: "desc"}}}})
     if (!ranking) notFound()
-
   return (
     <>
       <Link href={`/${code}/ranking`}><div className='ml-5 mt-5'><Button textcolor="" bcolor="" text="Classifica" color="bg-green-300" /></div></Link>
