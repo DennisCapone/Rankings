@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 
 export default function Create() {
   const [items, setItems] = useState(['', ''])
-  const [name, setName] = useState("")
+  const [name, setName] = useState('')
+  const router = useRouter()
   const add = () => {if (items[items.length-1] !== "" && items[0] !== "") setItems([...items, ""])}
   const remove = (index:number) => {if (items.length > 2)setItems(items.filter((_, i) => i !== index))}
   const handleNameChange = (value:string) =>{setName(value)}
@@ -18,8 +19,7 @@ export default function Create() {
     if (value == "") remove(index)
   }
   const Save = async () => {
-    const router = useRouter()
-    await addRanking(code, items, name)
+    const code = await addRanking(items, name)
     router.push(`/share/${code}`)
   }
   return (
