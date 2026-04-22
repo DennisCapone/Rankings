@@ -1,16 +1,16 @@
 "use client";
-import Button from "../../components/Button"
+import Button from "@/components/Button"
 import Link from "next/link";
 import { useState } from "react";
-import { handleClick } from "../actions";
+import { checkCode } from "@/app/actions";
 import { redirect } from "next/navigation";
 
 export default function Play() {
   const [code, codeSet] = useState("")
   const handleChange = (value:string) => {if (value.length <= 8) {codeSet(value.toUpperCase())}}
   const handleLink = async (e:React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()                                                                                  /** Prevent the event and redirect to
-    if (await checkCode(code)) redirect(`/${code}`)}                                                    link only in case the link is valide */
+    e.preventDefault()                                                                                  //Prevent the event and redirect to the
+    if (await checkCode(code)) redirect(`/${code}`)}                                                    // link only in case the link is avaible
 
   return (
     <>
