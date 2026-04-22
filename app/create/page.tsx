@@ -17,8 +17,8 @@ export default function Create() {
     newItems[index] = value
     setItems(newItems)
     if (value == "") remove(index)}
-  const Save = async () => {                                                      /** Save the ranking in the database
-    const code = await addRanking(items, name)                                      and go to the share link page */
+  const Save = async () => {                                                      // Save the ranking in the database
+    const code = await addRanking(items, name)                                    // and go to the share link page
     router.push(`/share/${code}`)}
   
   return (
