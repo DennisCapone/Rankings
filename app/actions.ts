@@ -6,10 +6,14 @@ export async function handleClick(code: string) {
     where: { code: code }});
   return !!exist; 
 }
-
 export async function addRanking(code:string, items:string[], name:string) {
   await db.ranking.create({
     data: { name: name, creator: "Dennis Capone", code: code, items: {
       create: items.map(n => ({name: n}))}}})
   return null
+}
+export async function generateCode() {
+    let code = ""
+    for (let ind = 0; ind < 8; ind++) code += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
+    return code
 }
