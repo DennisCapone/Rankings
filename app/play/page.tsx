@@ -10,7 +10,7 @@ export default function Play() {
   const handleChange = (value:string) => {if (value.length <= 8) {codeSet(value.toUpperCase())}}
   const handleLink = async (e:React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
-    if (await handleClick(code)) redirect(`/${code}`)
+    if (await checkCode(code)) redirect(`/${code}`)
   }
   return (
     <>
