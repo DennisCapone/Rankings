@@ -6,6 +6,4 @@ export default function RootLayout({children,}: Readonly<{
   return (
     <html lang="en">
       <body className="select-none antialiased">{children}</body>
-    </html>
-  );
-}
+    </html>)}
