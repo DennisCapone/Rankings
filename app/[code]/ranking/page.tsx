@@ -7,10 +7,10 @@ import { notFound } from "next/navigation"
 export default async function Ranking({params} : {params: Promise<{code:string}>}) {
   const { code } = await params                                              // Take the code from the url //
 
-  const ranking = await db.ranking.findUnique({                              /** Make a const ranking who contain
-    where: {code: code,},                                                     all the items of the ranking */
+  const ranking = await db.ranking.findUnique({                              // Make a const ranking who contain
+    where: {code: code,},                                                    // all the items of the ranking
     include: {items: {orderBy: { points: "desc"}}}})
-  if (!ranking) notFound()                                                   // check if the code is present in the database
+  if (!ranking) notFound()                                                   // Check if the code is present in the database
   
   return (
     <>
