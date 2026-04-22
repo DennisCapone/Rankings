@@ -1,16 +1,17 @@
-import Button from "../../../components/Button"
-import Link from "next/link";
-import { db } from "@/lib/db";
-import { Item } from "@prisma/client";
-import { notFound } from "next/navigation";
+import Button from "@/components/Button"
+import Link from "next/link"
+import { db } from "@/lib/db"
+import { Item } from "@prisma/client"
+import { notFound } from "next/navigation"
 
 export default async function Ranking({params} : {params: Promise<{code:string}>}) {
-  const { code } = await params
-  const ranking = await db.ranking.findUnique({
-    where: {code: code,},
-    include: {items: {orderBy: { points: "desc"}}}
-  })
-  if (!ranking) notFound()
+  const { code } = await params                                              // Take the code from the url //
+
+  const ranking = await db.ranking.findUnique({                              /** Make a const ranking who contain
+    where: {code: code,},                                                     all the items of the ranking */
+    include: {items: {orderBy: { points: "desc"}}}})
+  if (!ranking) notFound()                                                   // check if the code is present in the database
+  
   return (
     <>
       <div className="flex justify-center mt-30 gap-x-5">
