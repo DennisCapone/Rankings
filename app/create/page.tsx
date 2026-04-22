@@ -2,7 +2,7 @@
 import Button from '../../components/Button';
 import Link from 'next/link';
 import { useState } from 'react';
-import { addRanking } from "../actions";
+import { addRanking } from '../actions';
 import { useRouter } from 'next/navigation';
 
 export default function Create() {
