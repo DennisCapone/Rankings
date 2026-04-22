@@ -43,6 +43,6 @@ model Item {
   name        String
   points      Int     @default(1000)
   rankingCode String
-  probability Int     @default(0)
+  probability Int
   ranking     Ranking @relation(fields: [rankingCode], references: [code])
 }
