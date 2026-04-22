@@ -2,12 +2,13 @@
 import { db } from "@/lib/db";
 
 export async function eloSystem( idA: number, idB: number, K: number, aWinned: boolean) {
-    const { data: itemA } = await db.from("items").select("points").eq('id', idA).single()
-    const { data: itemB } = await db.from("items").select("points").eq('id', idB).single()
+    const itemA = await db.item.findUnique({where: { id: idA }, select: { points: true }});
+    const itemB = await db.item.findUnique({where: { id: idB }, select: { points: true }});
+    if (!itemA || !itemB) throw new Error("One or both items not found")
     const expA = 1 / (1 + Math.pow(10, (itemB.points-itemA.points)/400))
     const aInc = aWinned ? K*(1-expA) : -K*(expA)
     await Promise.all([
-        db.rpc('increment_val', { row_id: idA, quantity: Math.round(aInc) }),
-        db.rpc('increment_val', { row_id: idB, quantity: -Math.round(aInc) })
-    ])
+    await db.$transaction([
+        db.$executeRaw`UPDATE "items" SET points = points + ${Math.round(aInc)} WHERE id = ${idA}`,
+        db.$executeRaw`UPDATE "items" SET points = points - ${Math.round(aInc)} WHERE id = ${idB}`])])
 }
