@@ -1,7 +1,7 @@
 "use server"
 import { db } from "@/lib/db";
 
-export async function handleClick(code: string) {
+export async function checkCode(code: string) {
   const exist = await db.ranking.findUnique({
     where: { code: code }});
   return !!exist; 
