@@ -19,8 +19,6 @@ export default function Create() {
   }
   const Save = async () => {
     const router = useRouter()
-    let code = ""
-    for (let ind = 0; ind < 8; ind++) code += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
     await addRanking(code, items, name)
     router.push(`/share/${code}`)
   }
