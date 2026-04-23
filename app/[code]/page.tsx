@@ -8,8 +8,8 @@ import { eloSystem } from "../algorithms/eloSystem"
 import { useState, use, useEffect, useCallback } from "react"
 
 export default function Play({params} : {params: Promise<{code:string}>}) {
-  const [textOne, textOneSet] = useState("")
-  const [textTwo, textTwoSet] = useState("")
+  const [idOne, idOneSet] = useState<bigint | number>(0);
+  const [idTwo, idTwoSet] = useState<bigint | number>(0);
   const [idOne, idOneSet] = useState(0)
   const [idTwo, idTwoSet ] = useState(0)
   const { code } = use(params)             // Take the code from the url //
@@ -32,7 +32,7 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   return (
     <>
       <Link href={`/${code}/ranking`}><div className='ml-5 mt-5'><Button textcolor="" bcolor="" text="Classifica" color="bg-green-300" /></div></Link>
-      <div className='flex justify-center mt-5 gap-10 mt-50'><button onClick={() => {giveQuestion(); updateRanking(true)}}><Button textcolor="" color="" bcolor="" text={textOne} /></button><button onClick={() => {giveQuestion(); updateRanking(false)}}><Button text={textTwo} textcolor="" bcolor="" color="" /></button></div>
+      <div className='flex justify-center mt-5 gap-10 mt-50'><button onClick={() => {updateRanking(true); giveQuestion()}}><Button textcolor="" color="" bcolor="" text={textOne} /></button><button onClick={() => {updateRanking(false); giveQuestion()}}><Button text={textTwo} textcolor="" bcolor="" color="" /></button></div>
       <Link href="/"><div className='flex justify-center mt-70'><Button textcolor="" bcolor="" text="Torna indietro" color="bg-red-300" /></div></Link>
     </>
   )
