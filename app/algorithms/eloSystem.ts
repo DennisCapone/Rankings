@@ -9,4 +9,4 @@ export async function eloSystem( idA: bigint, idB: bigint, K: number, aWinned: b
     const aInc = Math.round(aWinned ? K*(1-expA) : -K*(expA))
     await db.$transaction([
         db.item.update({ where: { id: idA }, data: { points: { increment: aInc }}}),
-        db.item.update({ where: { id: idB }, data: { points: { increment: -aInc }}})])
+        db.item.update({ where: { id: idB }, data: { points: { increment: -aInc }}})])}
