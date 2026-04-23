@@ -14,11 +14,15 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
     const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
     if (chosens[0]) textOneSet(chosens[0].name); else textOneSet("")
     if (chosens[1]) textTwoSet(chosens[1].name); else textTwoSet("")}, [code])
-  useEffect(() => {                        // Check if the code is present in the db //
-    if (!checkCode(code)) notFound();
-    giveQuestion();
-  }, [code]);
-
+  useEffect(() => {
+    const init = async () => {                                        // Create an async function to bypass useEffect's limitations
+      const isValid = await checkCode(code)                       // Check if the code is present in the db //
+      if (!isValid) return;
+      await giveQuestion()                                        // Call the first match
+    }
+    init()
+  }, [code, giveQuestion])
+  
   return (
     <>
       <Link href={`/${code}/ranking`}><div className='ml-5 mt-5'><Button textcolor="" bcolor="" text="Classifica" color="bg-green-300" /></div></Link>
