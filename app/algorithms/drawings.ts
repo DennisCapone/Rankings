@@ -7,9 +7,10 @@ export async function drawingNormal({params} : {params: Promise<{code:string}>})
     where: {code: code,},                                                                      //  from the database
     include: {items: {orderBy: { points: "desc" }}}})
   if (!ranking) throw new Error("Ranking not found")                                           // Check if the code is present in the database
-  const chosen = []; let total = 0
-  for (const item of ranking.items) total += item.probability                                  // Algorithm to make a weighted extraction //
+  const chosen = []
   for (let i=0;i<2;i++) {
+    let total = 0
+    for (const item of ranking.items) total += item.probability                                  // Algorithm to make a weighted extraction //
     const random = Math.random() * total; let last = 0
     for (const item of ranking.items) {
       if ((i === 0 || chosen[0].id !== item.id) && random <= (last += item.probability)) {
