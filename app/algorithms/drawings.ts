@@ -6,11 +6,11 @@ export async function drawingNormal({params} : {params: Promise<{code:string}>})
   const ranking = await db.ranking.findUnique({                                                // Take the ranking's items
     where: {code: code,},                                                                      //  from the database
     include: {items: {orderBy: { points: "desc" }}}})
-  if (!ranking) throw new Error("Ranking not found")                                              // Check if the code is present in the database
-  let chosen = [], total = 0, avaibleItems = [...ranking.items]
+  if (!ranking) throw new Error("Ranking not found")                                           // Check if the code is present in the database
+  const chosen = []; let total = 0
   for (const item of ranking.items) total += item.probability                                  // Algorithm to make a weighted extraction //
   for (let i=0;i<2;i++) {
-    let random = Math.random() * total, last = 0
+    const random = Math.random() * total; let last = 0
     for (const item of ranking.items) {
       if ((i === 0 || chosen[0].id !== item.id) && random <= (last += item.probability)) {
         chosen[i] = item
