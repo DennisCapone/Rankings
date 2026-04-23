@@ -4,7 +4,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { checkCode } from "@/app/actions"
 import { drawingNormal } from "../algorithms/drawings"
-import { useState, use, useEffect } from "react"
+import { useState, use, useEffect, useCallback } from "react"
 
 export default function Play({params} : {params: Promise<{code:string}>}) {
   const [textOne, textOneSet] = useState("")
