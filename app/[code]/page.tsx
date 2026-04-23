@@ -12,8 +12,8 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   const { code } = use(params)             // Take the code from the url //
   const giveQuestion = useCallback(async () => {
     const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
-    if (chosens[0]) textOneSet(chosens[0].name) else textOneSet("")
-    if chosens[1] ? textTwoSet(chosens[1].name) else textTwoSet("")}, [code])
+    if (chosens[0]) textOneSet(chosens[0].name); else textOneSet("")
+    if chosens[1] ? textTwoSet(chosens[1].name); else textTwoSet("")}, [code])
   useEffect(() => {                        // Check if the code is present in the db //
     if (!checkCode(code)) notFound();
     giveQuestion();
