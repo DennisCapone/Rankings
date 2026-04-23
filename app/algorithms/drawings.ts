@@ -1,3 +1,6 @@
+"use server"
+import { db } from "@/lib/db";
+
 export async function drawingNormal({params} : {params: Promise<{code:string}>}) {
   const { code } = await params                                                                // Take the code from the url //
   const ranking = await db.ranking.findUnique({                                                // Take the ranking's items
@@ -13,4 +16,4 @@ export async function drawingNormal({params} : {params: Promise<{code:string}>})
         break}}
     if (!chosen[i]) {chosen[i] = ranking.items[ranking.items.length - 1];}
     total -= chosen[i].probability}
-  return chosen}                                                                                // Return an array with the 2 extracted element //
+  return chosen}                
