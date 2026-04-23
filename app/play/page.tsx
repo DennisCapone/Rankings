@@ -8,10 +8,7 @@ import { redirect } from "next/navigation";
 export default function Play() {
   const [code, codeSet] = useState("")
   const handleChange = (value:string) => {if (value.length <= 8) {codeSet(value.toUpperCase())}}
-  const handleLink = async (e:React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()                                                                                  //Prevent the event and redirect to the
-    if (await checkCode(code)) redirect(`/${code}`)}                                                    // link only in case the link is avaible
-
+  
   return (
     <>
       <div className="flex justify-center"><h1 className="text-3xl mt-20"> Inserisci il codice: </h1></div>
@@ -23,7 +20,7 @@ export default function Play() {
         value = {code}
       />
       </div>
-      <Link href={`/${code}`} onClick={handleLink}><div className='flex justify-center mt-5'><Button textcolor="" bcolor="" text="GIOCA" color="bg-blue-300" /></div></Link>
+      <Link href={`/${code}`}><div className='flex justify-center mt-5'><Button textcolor="" bcolor="" text="GIOCA" color="bg-blue-300" /></div></Link>
       <Link href="/"><div className='flex justify-center mt-70'><Button textcolor="" bcolor="" text="Torna indietro" color="bg-red-300" /></div></Link>
     </>
   )
