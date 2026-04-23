@@ -10,8 +10,8 @@ import { useState, use, useEffect, useCallback } from "react"
 export default function Play({params} : {params: Promise<{code:string}>}) {
   const [idOne, idOneSet] = useState<bigint | number>(0);
   const [idTwo, idTwoSet] = useState<bigint | number>(0);
-  const [idOne, idOneSet] = useState(0)
-  const [idTwo, idTwoSet ] = useState(0)
+  const [textOne, textOneSet] = useState(0)
+  const [textTwo, textTwoSet ] = useState(0)
   const { code } = use(params)             // Take the code from the url //
   const giveQuestion = useCallback(async () => {
     const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
