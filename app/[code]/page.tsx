@@ -8,8 +8,8 @@ import { eloSystem } from "../algorithms/eloSystem"
 import { useState, use, useEffect, useCallback } from "react"
 
 export default function Play({params} : {params: Promise<{code:string}>}) {
-  const [idOne, idOneSet] = useState<bigint | number>(0);
-  const [idTwo, idTwoSet] = useState<bigint | number>(0);
+  const [idOne, idOneSet] = useState<bigint>(0);
+  const [idTwo, idTwoSet] = useState<bigint>(0);
   const [textOne, textOneSet] = useState("")
   const [textTwo, textTwoSet ] = useState("")
   const { code } = use(params)             // Take the code from the url //
