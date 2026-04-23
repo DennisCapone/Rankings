@@ -10,16 +10,15 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   const [textOne, textOneSet] = useState("")
   const [textTwo, textTwoSet] = useState("")
   const { code } = use(params)             // Take the code from the url //
+  const giveQuestion = async () => {
+    const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
+    chosens[0] ? textOneSet(chosens[0].name) : textOneSet("");
+    chosens[1] ? textTwoSet(chosens[1].name) : textTwoSet("");};
   useEffect(() => {                        // Check if the code is present in the db //
     if (!checkCode(code)) notFound();
     giveQuestion();
   }, [code]);        
 
-  const giveQuestion = async () => {
-    const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
-    chosens[0] ? textOneSet(chosens[0].name) : textOneSet("");
-    chosens[1] ? textTwoSet(chosens[1].name) : textTwoSet("");
-  };
   return (
     <>
       <Link href={`/${code}/ranking`}><div className='ml-5 mt-5'><Button textcolor="" bcolor="" text="Classifica" color="bg-green-300" /></div></Link>
