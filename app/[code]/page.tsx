@@ -1,7 +1,6 @@
 'use client'
 import Button from "@/components/Button"
 import Link from "next/link"
-import { notFound } from "next/navigation"
 import { checkCode } from "@/app/actions"
 import { drawingNormal } from "../algorithms/drawings"
 import { eloSystem } from "../algorithms/eloSystem"
