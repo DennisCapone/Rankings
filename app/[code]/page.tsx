@@ -18,7 +18,7 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
     if (chosens[0]) textOneSet(chosens[0].name); else textOneSet("")
     if (chosens[1]) textTwoSet(chosens[1].name); else textTwoSet("")
     if (chosens[0]) idOneSet(chosens[0].id); else idOneSet(0)
-    if (chosens[1]) idTwoSet(chosens[1].id); else idTwo(0)}, [code])
+    if (chosens[1]) idTwoSet(chosens[1].id); else idTwoSet(0)}, [code])
   const updateRanking = async (aWinner: boolean) => {
     await eloSystem(idOne, idTwo, 100, aWinner)}
   useEffect(() => {
