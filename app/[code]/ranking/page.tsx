@@ -5,11 +5,14 @@ import {Item } from "@/lib/redisFunctions"
 import { notFound } from "next/navigation"
 
 export default async function Ranking({params} : {params: Promise<{code:string}>}) {
-  const { code } = await params                                              // Take the code from the url //
-  const rawRanking = await fast_db.zrange(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true }); if (!rawRanking) notFound()  // Take the ranking from redis
+  const { code } = await params                                                              // Take the code from the url //
+  const rawArray = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true }); 
+  if (!rawArray || rawArray.length === 0) notFound()                                         // Take the ranking from redis, if it doesn't exist return 404
+  const parsedRanking: { member: string; score: number }[] = []
+  for (let i = 0; i < rawArray.length; i += 2) parsedRanking.push({ member: String(rawArray[i]), score: Number(rawArray[i+1]) })
   const items: Item[] = await Promise.all(
-    (rawRanking as { member: string; score: number }[]).map(async (entry) => {
-      const name = await fast_db.hget<string>(`item:${entry.member}`, "name");
+    (parsedRanking as { member: string; score: number }[]).map(async (entry) => {
+      const name = await fast_db.hget<string>(`item:${entry.member}`, "name")
       return {
         id: BigInt(entry.member),
         name: name || "Sconosciuto",
