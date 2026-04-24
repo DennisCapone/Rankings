@@ -1,3 +1,4 @@
+'use server'
 import { fast_db } from "./fast_db";
 
 export interface Item {

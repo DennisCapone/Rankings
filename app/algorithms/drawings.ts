@@ -1,4 +1,4 @@
-"use server"
+'use server'
 import { fast_db } from "@/lib/fast_db";
 import { syncRankings } from "@/lib/sync";
 

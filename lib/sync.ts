@@ -1,3 +1,4 @@
+'use server'
 import { PrismaClient } from '@prisma/client'
 import { saveInRanking } from './redisFunctions'
 import { Item, Ranking } from './redisFunctions'
