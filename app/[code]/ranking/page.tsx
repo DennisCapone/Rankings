@@ -1,16 +1,20 @@
 import Button from "@/components/Button"
 import Link from "next/link"
-import { db } from "@/lib/db"
-import { Item } from "@prisma/client"
+import { fast_db } from "@/lib/fast_db"
+import {Item } from "@/lib/redisFunctions"
 import { notFound } from "next/navigation"
 
 export default async function Ranking({params} : {params: Promise<{code:string}>}) {
   const { code } = await params                                              // Take the code from the url //
 
-  const ranking = await db.ranking.findUnique({                              // Make a const ranking who contain
-    where: {code: code,},                                                    // all the items of the ranking
-    include: {items: {orderBy: { points: "desc"}}}})
-  if (!ranking) notFound()                                                   // Check if the code is present in the database
+  const rawRanking = await fast_db.zrange(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true }); if (!rawRanking) notFound()  // Take the ranking from redis
+  const items: Item[] = await Promise.all(
+    (rawRanking as { member: string; score: number }[]).map(async (entry) => {
+      const name = await fast_db.hget<string>(`item:${entry.member}`, "name");
+      return {
+        id: BigInt(entry.member),
+        name: name || "Sconosciuto",
+        points: entry.score,}}))
   
   return (
     <>
@@ -20,8 +24,8 @@ export default async function Ranking({params} : {params: Promise<{code:string}>
         <div className="h-10 w-10 flex justify-center">pos</div>
       </div>
       {
-        ranking.items.map((item:Item, index:number) => (
-        <div key={item.id} className="flex justify-center h-10 mt-3 gap-x-5">
+        items.map((item:Item, index:number) => (
+        <div key={(item.id).toString()} className="flex justify-center h-10 mt-3 gap-x-5">
         <div className="flex justify-center h-10 w-70 border-black border-solid border-3"><h1>{item.name}</h1></div>
         <div className="border-black border-solid border-3 h-10 w-15 flex justify-center">{item.points}</div>
         <div className="border-black border-solid border-3 h-10 w-10 flex justify-center">{index+1}</div>
@@ -29,6 +33,4 @@ export default async function Ranking({params} : {params: Promise<{code:string}>
       }
       <Link href={`/${code}`}><div className='flex justify-center mt-70'><Button textcolor="" bcolor="" text="Torna a giocare" color="bg-blue-300" /></div></Link>
       <Link href="/"><div className='flex justify-center mt-2'><Button textcolor="" bcolor="" text="Torna indietro" color="bg-red-300" /></div></Link>
-    </>
-  )
-}
+    </>)}

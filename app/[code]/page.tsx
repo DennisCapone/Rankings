@@ -4,19 +4,18 @@ import Link from "next/link"
 import { drawingNormal } from "../algorithms/drawings"
 import { eloSystem } from "../algorithms/eloSystem"
 import { useState, use, useEffect, useCallback } from "react"
-import { syncRankings } from "@/lib/sync"
 
 export default function Play({params} : {params: Promise<{code:string}>}) {
   const { code } = use(params)
   const  [textOne, setTextOne] = useState("Loading...")
   const  [textTwo, setTextTwo] = useState("Loading...")
   const giveQuestion = useCallback(async() => {
-    const players = await drawingNormal({params: Promise.resolve({code})}); if (!players) throw new Error("No players found")
+    const players = await drawingNormal(code); if (!players) throw new Error("No players found")
     setTextOne(players.p1.name)
     setTextTwo(players.p2.name)}, [])
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => {giveQuestion(); syncRankings()}, [giveQuestion])
+  useEffect(() => {giveQuestion()}, [giveQuestion])
   return (
     <>
       <Link href={`/${code}/ranking`}><div className='ml-5 mt-5'><Button textcolor="" bcolor="" text="Classifica" color="bg-green-300" /></div></Link>
