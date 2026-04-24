@@ -1,9 +1,8 @@
 "use server"
 import { fast_db } from "@/lib/fast_db";
 
-export async function eloSystem({params} : {params: Promise<{code:string}>}, aWinned: boolean) {
+export async function eloSystem(code: string, aWinned: boolean) {
     const K = 100
-    const { code } = await params;
     const idA = await fast_db.get(`ranking:${code}:idA`)                          // Take the id of the players from the database
     const idB = await fast_db.get(`ranking:${code}:idB`)
     const pointsA = await fast_db.zscore(`fast_ranking:${code}`, idA);          // Take the points of the players from the ranking 
