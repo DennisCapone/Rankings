@@ -13,7 +13,6 @@ export default function Create() {
 
   const add = () => {if (items[items.length-1] !== "" && items[0] !== "") setItems([...items, ""])}
   const remove = (index:number) => {if (items.length > 2)setItems(items.filter((_, i) => i !== index))}
-
   const handleNameChange = (value:string) =>{setName(value)}
   const handleChange = (value:string, index:number) => {
     const newItems = [...items]
@@ -21,13 +20,10 @@ export default function Create() {
     setItems(newItems)
     if (value == "") remove(index)
   }
-  
   const Save = async () => {
     const code = await addRanking(items, name)
     router.push(`/share/${code}`)
   }
-  
-
 
   return (
     <>
@@ -39,19 +35,17 @@ export default function Create() {
       /></div>
 
       <div className='flex justify-center mt-5'><h1 className='mb-5 text-3xl'> Lista: </h1></div>
-      {
-        items.map((item, i) => (
-          <div key={i} className='mb-3 ml-3 flex justify-center'>
-            <input
-              type="text"
-              value = {item}
-              onChange = {e => (handleChange(e.target.value, i))}
-              placeholder = {`Elemento ${i+1}`}
-              className = 'mr-3 border-black border-solid border-2 h-14 text-xl outline-none rounded-xl'
-            />
-            <button onClick={() => {remove(i)}} className='cursor-pointer border-black border-solid border-2 h-14 w-14 text-xl rounded-2xl'> X </button>
-          </div>
-        ))}
+      {items.map((item, i) => (
+        <div key={i} className='mb-3 ml-3 flex justify-center'>
+          <input
+            type="text"
+            value = {item}
+            onChange = {e => (handleChange(e.target.value, i))}
+            placeholder = {`Elemento ${i+1}`}
+            className = 'mr-3 border-black border-solid border-2 h-14 text-xl outline-none rounded-xl'
+          />
+          <button onClick={() => {remove(i)}} className='cursor-pointer border-black border-solid border-2 h-14 w-14 text-xl rounded-2xl'> X </button>
+        </div>))}
 
       <div className='flex justify-center'><button onClick={() => add()} className='cursor-pointer rounded-2xl h-14 text-xl border-black border-solid border-2 w-35'> AGGIUNGI </button></div>
       <div className='flex justify-center'><button onClick={Save} className='flex justify-center mt-30'><Button text="CREA" color='bg-blue-700' textcolor='text-white' bcolor='' /></button></div>

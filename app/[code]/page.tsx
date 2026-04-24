@@ -11,7 +11,7 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   const [idTwo, idTwoSet] = useState<bigint>(0n);
   const [textOne, textOneSet] = useState("")
   const [textTwo, textTwoSet ] = useState("")
-  const { code } = use(params)             // Take the code from the url //
+  const { code } = use(params)                                                     // Take the code from the url //
   const giveQuestion = useCallback(async () => {
     const chosens = await drawingNormal({params: Promise.resolve({code: code})})   // Take the 2 extracted items from the algorithm //
     if (chosens[0]) textOneSet(chosens[0].name); else textOneSet("")
@@ -21,8 +21,8 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   const updateRanking = async (aWinner: boolean) => {
     await eloSystem(idOne, idTwo, 100, aWinner)}
   useEffect(() => {
-    const init = async () => {                                        // Create an async function to bypass useEffect's limitations
-      const isValid = await checkCode(code)                       // Check if the code is present in the db //
+    const init = async () => {                                     // Create an async function to bypass useEffect's limitations
+      const isValid = await checkCode(code)                        // Check if the code is present in the db //
       if (!isValid) return;
       await giveQuestion()}                                        // Call the first match
     init()}, [code, giveQuestion])

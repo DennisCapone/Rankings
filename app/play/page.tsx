@@ -2,8 +2,6 @@
 import Button from "@/components/Button"
 import Link from "next/link";
 import { useState } from "react";
-import { checkCode } from "@/app/actions";
-import { redirect } from "next/navigation";
 
 export default function Play() {
   const [code, codeSet] = useState("")
