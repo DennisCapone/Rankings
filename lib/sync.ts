@@ -1,13 +1,12 @@
 'use server'
-import { PrismaClient } from '@prisma/client'
+import { db } from './db';
 import { saveInRanking } from './redisFunctions'
 import { Item, Ranking } from './redisFunctions'
 import { fast_db } from './fast_db';
 
-const prisma = new PrismaClient();
 export async function syncRankings(code:string) {
   const exists = await fast_db.exists(`fast_ranking:${code}`);
-  if (!exists) {const ranking = await prisma.ranking.findUnique({
+  if (!exists) {const ranking = await db.ranking.findUnique({
       where: { code },
       include: { items: true },})
     if (!ranking) throw new Error("Ranking not found in the database")
