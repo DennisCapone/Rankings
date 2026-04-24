@@ -13,6 +13,7 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
     const players = await drawingNormal(); if (!players) throw new Error("No players found")
     setTextOne(players.p1.name)
     setTextTwo(players.p2.name)}
+    // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => {giveQuestion()}, [giveQuestion])
   return (
     <>
