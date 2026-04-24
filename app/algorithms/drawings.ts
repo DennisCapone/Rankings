@@ -1,21 +1,21 @@
 "use server"
-import { db } from "@/lib/db";
+import { fast_db } from "@/lib/fast_db";
 
-export async function drawingNormal({params} : {params: Promise<{code:string}>}) {
-  const { code } = await params                                                                // Take the code from the url //
-  const ranking = await db.ranking.findUnique({                                                // Take the ranking's items
-    where: {code: code,},                                                                      //  from the database
-    include: {items: {orderBy: { points: "desc" }}}})
-  if (!ranking) throw new Error("Ranking not found")                                           // Check if the code is present in the database
-  const chosen = []
-  for (let i=0;i<2;i++) {
-    let total = 0
-    for (const item of ranking.items) total += item.probability                                  // Algorithm to make a weighted extraction //
-    const random = Math.random() * total; let last = 0
-    for (const item of ranking.items) {
-      if ((i === 0 || chosen[0].id !== item.id) && random <= (last += item.probability)) {
-        chosen[i] = item
-        break}}
-    if (!chosen[i]) {chosen[i] = ranking.items[ranking.items.length - 1];}
-    total -= chosen[i].probability}
-  return chosen}                                                                                // Return an array with the 2 extracted element //"use server"
+export async function drawingNormal() {
+  interface Player {                                             // Defining player
+    id: number
+    score: number
+    name: string}
+  interface pair {                                               // Defining pair
+    p1: Player; p2: Player
+    diff: number}
+  const players: Player[] = []
+  const pairs: pair[] = []
+  for (let i=0; i<players.length; i++) {                          // Creating all the possible pairs
+    for (let j=i+1;j<players.length;j++) {
+      pairs.push({p1: players[i], p2:players[j], diff:players[i].score-players[j].score})}}
+  const jackpotPairs = (((players.length + 1) * players.length) / 2) * 0.1
+  pairs.splice(0, jackpotPairs)                                 // Remove the jackpots from the sort
+  const r = Math.floor(Math.random() * pairs.length)
+  const chosens = pairs[r]
+  return chosens}
