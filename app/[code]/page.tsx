@@ -10,9 +10,11 @@ export default function Play({params} : {params: Promise<{code:string}>}) {
   const  [textOne, setTextOne] = useState("Loading...")
   const  [textTwo, setTextTwo] = useState("Loading...")
   const giveQuestion = useCallback(async() => {
+    try {
     const players = await drawingNormal(code); if (!players) throw new Error("No players found")
     setTextOne(players.p1.name)
-    setTextTwo(players.p2.name)}, [code])
+    setTextTwo(players.p2.name)
+    } catch (error) {console.error(error)}}, [code])
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {giveQuestion()}, [giveQuestion])

@@ -6,7 +6,6 @@ import { notFound } from "next/navigation"
 
 export default async function Ranking({params} : {params: Promise<{code:string}>}) {
   const { code } = await params                                              // Take the code from the url //
-
   const rawRanking = await fast_db.zrange(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true }); if (!rawRanking) notFound()  // Take the ranking from redis
   const items: Item[] = await Promise.all(
     (rawRanking as { member: string; score: number }[]).map(async (entry) => {
@@ -15,7 +14,6 @@ export default async function Ranking({params} : {params: Promise<{code:string}>
         id: BigInt(entry.member),
         name: name || "Sconosciuto",
         points: entry.score,}}))
-  
   return (
     <>
       <div className="flex justify-center mt-30 gap-x-5">

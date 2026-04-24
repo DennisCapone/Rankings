@@ -16,6 +16,7 @@ export async function drawingNormal(code: string) {
         id: parseInt(entry.member),
         score: entry.score,
         name: name || `Player ${entry.member}`}}))
+  if (players.length < 2) return null;
   const pairs: pair[] = []
   for (let i=0; i<players.length; i++) {                          // Creating all the possible pairs
     for (let j=i+1;j<players.length;j++) {
