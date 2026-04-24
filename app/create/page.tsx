@@ -18,12 +18,10 @@ export default function Create() {
     const newItems = [...items]
     newItems[index] = value
     setItems(newItems)
-    if (value == "") remove(index)
-  }
+    if (value == "") remove(index)}
   const Save = async () => {
     const code = await addRanking(items, name)
-    router.push(`/share/${code}`)
-  }
+    router.push(`/share/${code}`)}
 
   return (
     <>
