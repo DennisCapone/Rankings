@@ -8,9 +8,12 @@ export async function drawingNormal(code: string) {
     id: number, score: number, name: string}
   interface pair {                                               // Defining pair
     p1: Item; p2: Item, diff: number}
-  const rawRanking = await fast_db.zrange(`fast_ranking:${code}`, 0, -1, { withScores: true }); if (!rawRanking) return null;
-  const players: Item[] = await Promise.all(                                  // Transforming the raw ranking data into Player objects
-    (rawRanking as { member: string; score: number }[]).map(async (entry) => {
+  const rawRanking = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true }) 
+  if (!rawRanking || rawRanking.length === 0) return null
+  const parsedRanking: { member: string; score: number }[] = []
+  for (let i = 0; i < rawRanking.length; i += 2) parsedRanking.push({ member: String(rawRanking[i]), score: Number(rawRanking[i+1]) })
+  const players: Item[] = await Promise.all(
+    (parsedRanking as { member: string; score: number }[]).map(async (entry) => {
       const name = await fast_db.hget<string>(`item:${entry.member}`, "name")
       return {
         id: parseInt(entry.member),
