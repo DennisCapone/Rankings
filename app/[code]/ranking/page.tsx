@@ -1,5 +1,6 @@
 import Button from "@/components/Button"
 import Link from "next/link"
+import { after } from "next/server"
 import { fast_db } from "@/lib/fast_db"
 import { Item } from "@/lib/redisFunctions"
 import { notFound } from "next/navigation"
@@ -9,8 +10,10 @@ export default async function Ranking({ params }: { params: Promise<{ code: stri
   const { code } = await params   // Awaiting the code parameter from the URL //
 
   // Update data in Supabase in background //
-  syncRedisToDB(code).catch((err) => {
-    console.error(`Errore durante il salvataggio in background per ${code}:`, err)
+  after(() => {
+    syncRedisToDB(code).catch((err) => {
+      console.error(`Errore durante il salvataggio in background per ${code}:`, err)
+    })
   })
 
   // Fetching the raw ranking data from Redis //
