@@ -3,9 +3,15 @@ import Link from "next/link"
 import { fast_db } from "@/lib/fast_db"
 import { Item } from "@/lib/redisFunctions"
 import { notFound } from "next/navigation"
+import { syncRedisToDB } from "@/lib/sync"
 
 export default async function Ranking({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params   // Awaiting the code parameter from the URL //
+
+  // Update data in Supabase in background //
+  syncRedisToDB(code).catch((err) => {
+    console.error(`Errore durante il salvataggio in background per ${code}:`, err)
+  })
 
   // Fetching the raw ranking data from Redis //
   const rawArray = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true })

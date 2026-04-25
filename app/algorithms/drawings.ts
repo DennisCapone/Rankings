@@ -1,11 +1,11 @@
 'use server'
 import { fast_db } from "@/lib/fast_db";
-import { syncRankings } from "@/lib/sync";
+import { syncDBtoRedis } from "@/lib/sync";
 
 export async function drawingNormal(code: string) {
   // Check if the ranking exists in Redis, if not search it in Supabase //
   const exists = await fast_db.exists(`fast_ranking:${code}`)
-  if (!exists) await syncRankings(code)
+  if (!exists) await syncDBtoRedis(code)
 
   // Define the interfaces for the items and pairs //
   interface Item {

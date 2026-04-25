@@ -4,7 +4,7 @@ import { fast_db } from '@/lib/fast_db'
 import { saveInRanking, Item, Ranking } from '@/lib/redisFunctions'
 
 // Function to synchronize the rankings from between the database and Redis //
-export async function syncRankings(code: string) {
+export async function syncDBtoRedis(code: string) {
   // Check if the ranking already exists in Redis //
   const exists = await fast_db.exists(`fast_ranking:${code}`)
   if (!exists) {
@@ -30,5 +30,38 @@ export async function syncRankings(code: string) {
       const savePromises = itemsData.map(item => saveInRanking(rankingData, item))
       await Promise.all(savePromises)
     } catch (error) { throw new Error("Error occurred while syncing rankings: " + error) }
+  }
+}
+
+
+export async function syncRedisToDB(code: string) {
+  try {
+    //  Check if the ranking exists in Redis before attempting to sync //
+    const exists = await fast_db.exists(`fast_ranking:${code}`)
+    if (!exists) {
+      console.log(`Nessun dato in Redis per il ranking: ${code}`)
+      return
+    }
+
+    // Take all the items ids from Redis //
+    const itemIds = await fast_db.zrange(`fast_ranking:${code}`, 0, -1)
+    if (itemIds.length === 0) return;
+
+    // Updating points //
+    const updatePromises = itemIds.map(async (id) => {
+      // Takes the points of the item from Redis //
+      const points = await fast_db.zscore(`fast_ranking:${code}`, id as string)
+
+      // Update the points of the item in the database //
+      if (points !== null) {
+        return db.item.update({
+          where: { id: BigInt(id as string) },
+          data: { points: Number(points) },
+        })
+      }
+    })
+    await Promise.all(updatePromises)
+  } catch (error) {
+    console.error("Errore durante la sincronizzazione da Redis a DB:", error)
   }
 }
