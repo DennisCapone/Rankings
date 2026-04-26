@@ -31,10 +31,10 @@ export default function Play({ params }: { params: Promise<{ code: string }> }) 
       <Link href={`/${code}/ranking`}><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></Link>
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
-        <button onClick={async () => { await eloSystem(code, true); await giveQuestion() }}>
+        <button onClick={async () => { eloSystem(code, true); giveQuestion() }}>
           <Button textcolor="" color="" bcolor="" text={textOne} />
         </button>
-        <button onClick={async () => { await eloSystem(code, false); await giveQuestion() }}>
+        <button onClick={async () => { eloSystem(code, false); giveQuestion() }}>
           <Button text={textTwo} textcolor="" bcolor="" color="" />
         </button>
       </div>

@@ -1,6 +1,7 @@
 'use server'
 import { db } from '@/lib/db'
 import { fast_db } from '@/lib/fast_db'
+import { Prisma } from '@prisma/client'
 import { saveInRanking, Item, Ranking } from '@/lib/redisFunctions'
 
 // Function to synchronize the rankings from between the database and Redis //
@@ -14,7 +15,7 @@ export async function syncDBtoRedis(code: string) {
     })
     if (!ranking) throw new Error("Ranking not found in the database")
 
-    // Save the ranking and its items in Redis //
+    // Save the ranking and the items in Redis //
     try {
       const rankingData: Ranking = {
         code: ranking.code,
@@ -22,13 +23,12 @@ export async function syncDBtoRedis(code: string) {
         idA: 0n,
         idB: 0n,
       }
-      const itemsData: Item[] = ranking.items.map((item) => ({
+      const items: Item[] = ranking.items.map((item) => ({
         id: BigInt(item.id),
         name: item.name,
         points: item.points,
       }))
-      const savePromises = itemsData.map(item => saveInRanking(rankingData, item))
-      await Promise.all(savePromises)
+      await saveInRanking(rankingData, items)
     } catch (error) { throw new Error("Error occurred while syncing rankings: " + error) }
   }
 }
@@ -48,19 +48,22 @@ export async function syncRedisToDB(code: string) {
     if (itemIds.length === 0) return;
 
     // Updating points //
-    const updatePromises = itemIds.map(async (id) => {
+    const updateQueries: Prisma.Prisma__ItemClient<any>[] = []
+    itemIds.map(async (id) => {
       // Takes the points of the item from Redis //
       const points = await fast_db.zscore(`fast_ranking:${code}`, id as string)
 
       // Update the points of the item in the database //
       if (points !== null) {
-        return db.item.update({
-          where: { id: BigInt(id as string) },
-          data: { points: Number(points) },
-        })
+        updateQueries.push(
+          db.item.update({
+            where: { id: BigInt(id as string) },
+            data: { points: Number(points) },
+          })
+        )
       }
     })
-    await Promise.all(updatePromises)
+    await db.$transaction(updateQueries)
   } catch (error) {
     console.error("Errore durante la sincronizzazione da Redis a DB:", error)
   }

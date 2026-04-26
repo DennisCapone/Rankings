@@ -30,16 +30,19 @@ export default async function Ranking({ params }: { params: Promise<{ code: stri
   } 
 
   // Creating the items array with the details of each player //
-  const items: Item[] = await Promise.all(
-    (ranking as { member: string, score: number }[]).map(async (item) => {
-      const name = await fast_db.hget<string>(`item:${item.member}`, "name")
-      return {
-        id: BigInt(item.member),
-        name: name || "Sconosciuto",
-        points: item.score,
-      }
+  const pipeline = fast_db.pipeline()
+  ranking.forEach((item) => {
+    pipeline.hget(`item:${item.member}`, "name")
+  })
+  const names = await pipeline.exec()
+  if (!names) notFound()
+  const items: Item[] = (ranking as { member: string, score: number }[]).map((item, index) => {
+    return {
+      id: BigInt(item.member),
+      name: names[index] as string || "Sconosciuto",
+      points: item.score,
     }
-  ))
+  })
 
 
   return (

@@ -14,25 +14,31 @@ export interface Ranking {
 }
 
 // Function to save an item in the ranking //
-export async function saveInRanking(ranking: Ranking, item: Item) {
+export async function saveInRanking(ranking: Ranking, items: Item[]) {
   try {
-    // Sorted set to store items based on points
-    await fast_db.zadd(`fast_ranking:${ranking.code}`, {
-      score: item.points,
-      member: item.id.toString(),
-    })
+    const pipeline = fast_db.pipeline()
 
-    // Hash to store item details //
-    await fast_db.hset(`item:${item.id.toString()}`, { 
-      name: item.name, 
+    items.forEach((item) => {
+      // Sorted set to store items based on points
+      pipeline.zadd(`fast_ranking:${ranking.code}`, {
+        score: item.points,
+        member: item.id.toString(),
+      })
+
+      // Hash to store item details //
+      pipeline.hset(`item:${item.id.toString()}`, { 
+        name: item.name, 
+      })
     })
 
     // Hash to store ranking details //
-    await fast_db.hset(`ranking:${ranking.code}`, {
+    pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
       idA: ranking.idA.toString(),
       idB: ranking.idB.toString(),
     })
+
+    await pipeline.exec()
   } catch (error) { 
     throw new Error("Error during the saving process: " + error)
   }
