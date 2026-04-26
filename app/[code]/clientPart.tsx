@@ -23,11 +23,11 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   // Prefill the queue with 3 pairs to avoid loading times during the game //
   useEffect(() => {
-    for (let i = 0; i < 3; i++) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      fillQueue()
+    const initQueue = async () => {
+      await Promise.all([fillQueue(), fillQueue(), fillQueue()])
     }
-  }, [])
+    initQueue()
+  }, [fillQueue])
 
   // Function to handle the vote and update the current pair //
   const handleVote = () => {
