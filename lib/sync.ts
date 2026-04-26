@@ -1,7 +1,7 @@
 'use server'
 import { db } from '@/lib/db'
 import { fast_db } from '@/lib/fast_db'
-import { Prisma } from '@prisma/client'
+import { Prisma, Item as ItemPrisma } from '@prisma/client'
 import { saveInRanking, Item, Ranking } from '@/lib/redisFunctions'
 
 // Function to synchronize the rankings from between the database and Redis //
@@ -48,7 +48,7 @@ export async function syncRedisToDB(code: string) {
     if (itemIds.length === 0) return;
 
     // Updating points //
-    const updateQueries: Prisma.Prisma__ItemClient<any>[] = []
+    const updateQueries: Prisma.Prisma__ItemClient<ItemPrisma>[] = []
     itemIds.map(async (id) => {
       // Takes the points of the item from Redis //
       const points = await fast_db.zscore(`fast_ranking:${code}`, id as string)
