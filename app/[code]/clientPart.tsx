@@ -1,7 +1,7 @@
 'use client'
 import Button from "@/components/Button"
 import Link from "next/link"
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { drawingNormal } from "@/app/algorithms/drawings"
 import { eloSystem } from "@/app/algorithms/eloSystem"
 import { Pair } from "@/app/algorithms/drawings"
@@ -12,28 +12,26 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   const [textTwo, setTextTwo] = useState(initialPlayers?.p2.name || "Caricamento...")
 
   // Function to give a new question to the user //
-  const giveQuestion = useCallback(async () => {
+  const giveQuestion = async () => {
     try {
-      const players = await drawingNormal(code); if (!players) throw new Error("No players found")
+      const players = await drawingNormal(code)
+      if (!players) throw new Error("No players found")
+
       setTextOne(players.p1.name)
       setTextTwo(players.p2.name)
-    } catch (error) { console.error(error) }
-  }, [code])
-
-  // Calling the first question on the first render of the page //
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { giveQuestion() }, [giveQuestion])
-
+    } 
+    catch (error) { console.error(error) }
+  }
 
   return (
     <>
       <Link href={`/${code}/ranking`}><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></Link>
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
-        <button onClick={async () => { eloSystem(code, true); giveQuestion() }}>
+        <button onClick={() => { eloSystem(code, true); giveQuestion() }}>
           <Button textcolor="" color="" bcolor="" text={textOne} />
         </button>
-        <button onClick={async () => { eloSystem(code, false); giveQuestion() }}>
+        <button onClick={() => { eloSystem(code, false); giveQuestion() }}>
           <Button text={textTwo} textcolor="" bcolor="" color="" />
         </button>
       </div>
