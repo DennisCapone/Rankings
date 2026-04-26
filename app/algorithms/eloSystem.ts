@@ -24,13 +24,4 @@ export async function eloSystem(code: string, aWinned: boolean) {
     pipeline.zincrby(`fast_ranking:${code}`, aInc, idA);
     pipeline.zincrby(`fast_ranking:${code}`, -aInc, idB);
     await pipeline.exec();
-
-    // Save the current pair as drawn //
-    await Promise.all([
-    fast_db.hset(`ranking:${code}`, {
-      idA: idA,
-      idB: idB
-    }),
-    fast_db.sadd(`drawn_pairs:${code}`, `${idA}-${idB}`)
-  ])
 }

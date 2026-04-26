@@ -83,5 +83,14 @@ export async function drawingNormal(code: string) {
   chosens.p1.name = name1 || "Sconosciuto"
   chosens.p2.name = name2 || "Sconosciuto"
 
+  // Save the current pair as drawn //
+    await Promise.all([
+    fast_db.hset(`ranking:${code}`, {
+      idA: chosens.p1.id.toString(),
+      idB: chosens.p2.id.toString()
+    }),
+    fast_db.sadd(`drawn_pairs:${code}`, `${chosens.p1.id.toString()}-${chosens.p2.id.toString()}`)
+  ])
+
   return chosens
 }

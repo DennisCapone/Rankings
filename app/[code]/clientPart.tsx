@@ -1,38 +1,51 @@
 'use client'
 import Button from "@/components/Button"
 import Link from "next/link"
-import { useState } from "react"
 import { drawingNormal } from "@/app/algorithms/drawings"
 import { eloSystem } from "@/app/algorithms/eloSystem"
 import { Pair } from "@/app/algorithms/drawings"
+import { useEffect, useState } from "react"
 
 export default function ClientPart({ code, initialPlayers }: { code: string, initialPlayers: Pair | null }) {
-  // Defining the states for the names of the two players in the current question //
-  const [textOne, setTextOne] = useState(initialPlayers?.p1.name || "Caricamento...")
-  const [textTwo, setTextTwo] = useState(initialPlayers?.p2.name || "Caricamento...")
+  // Defining the states for the current and queued pairs //
+  const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPlayers)
+  const [ queue, setQueue ] = useState<(Pair | null)[]>([])
 
-  // Function to give a new question to the user //
-  const giveQuestion = async () => {
+  // Function to fill the queue with new pairs  //
+  const fillQueue = async () => {
     try {
-      const players = await drawingNormal(code)
-      if (!players) throw new Error("No players found")
-
-      setTextOne(players.p1.name)
-      setTextTwo(players.p2.name)
-    } 
+      const pair = await drawingNormal(code)
+      if (!pair) throw new Error("No pair found")
+      setQueue(prev => [...prev, pair])
+      } 
     catch (error) { console.error(error) }
   }
+
+  // Prefill the queue with 3 pairs to avoid loading times during the game //
+  useEffect(() => {
+    for (let i = 0; i < 3; i++) {
+      fillQueue()
+    }
+  }, [])
+
+  // Function to handle the vote and update the current pair //
+  const handleVote = () => {
+    fillQueue()
+    setCurrentPair(queue[0])
+    setQueue(prev => prev.slice(1))
+  }
+
 
   return (
     <>
       <Link href={`/${code}/ranking`}><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></Link>
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
-        <button onClick={() => { eloSystem(code, true); giveQuestion() }}>
-          <Button textcolor="" color="" bcolor="" text={textOne} />
+        <button onClick={() => { eloSystem(code, true); handleVote() }}>
+          <Button textcolor="" color="" bcolor="" text={currentPair?.p1.name || "unknown"} />
         </button>
-        <button onClick={() => { eloSystem(code, false); giveQuestion() }}>
-          <Button text={textTwo} textcolor="" bcolor="" color="" />
+        <button onClick={() => { eloSystem(code, false); handleVote() }}>
+          <Button text={currentPair?.p2.name || "unknown"} textcolor="" bcolor="" color="" />
         </button>
       </div>
 
