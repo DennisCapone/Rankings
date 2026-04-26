@@ -4,7 +4,7 @@ import Link from "next/link"
 import { drawingNormal } from "@/app/algorithms/drawings"
 import { eloSystem } from "@/app/algorithms/eloSystem"
 import { Pair } from "@/app/algorithms/drawings"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 export default function ClientPart({ code, initialPlayers }: { code: string, initialPlayers: Pair | null }) {
   // Defining the states for the current and queued pairs //
@@ -12,16 +12,17 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   const [ queue, setQueue ] = useState<(Pair | null)[]>([])
 
   // Function to fill the queue with new pairs  //
-  const fillQueue = async () => {
+  const fillQueue = useCallback(async () => {
     try {
       const pair = await drawingNormal(code)
       if (!pair) throw new Error("No pair found")
       setQueue(prev => [...prev, pair])
       } 
     catch (error) { console.error(error) }
-  }
+  }, [code])
 
   // Prefill the queue with 3 pairs to avoid loading times during the game //
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     for (let i = 0; i < 3; i++) {
       fillQueue()
