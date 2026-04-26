@@ -30,11 +30,10 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   }, [fillQueue])
 
   // Function to handle the vote and update the current pair //
-  const handleVote = async () => {
-    // If the queue is empty, wait for a new pair //
-    if (queue.length === 1) await fillQueue()
-    else fillQueue()
-
+  const handleVote = (code: string, vote: boolean) => {
+    if (queue.length === 0) return
+    fillQueue()
+    eloSystem(code, vote)
     setCurrentPair(queue[0])
     setQueue(prev => prev.slice(1))
   }
@@ -45,10 +44,10 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
       <Link href={`/${code}/ranking`}><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></Link>
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
-        <button onClick={() => { eloSystem(code, true); handleVote() }}>
+        <button onClick={() => { handleVote(code, true) }}>
           <Button textcolor="" color="" bcolor="" text={currentPair?.p1.name || ""} />
         </button>
-        <button onClick={() => { eloSystem(code, false); handleVote() }}>
+        <button onClick={() => { handleVote(code, false) }}>
           <Button text={currentPair?.p2.name || ""} textcolor="" bcolor="" color="" />
         </button>
       </div>
