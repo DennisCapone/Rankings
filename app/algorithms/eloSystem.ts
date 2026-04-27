@@ -7,10 +7,11 @@ export async function eloSystem(code: string, aWinned: boolean) {
     // Fetch the current pair of players from Redis and their points //
     const data = await fast_db.rpop(`queue:${code}`)
     if (!data) return null
-    const { idA, idB } = JSON.parse(data as string)
+    const parsedData = typeof data === 'string' ? JSON.parse(data) : data
+    const { idA, idB } = parsedData
     const [ pointsA, pointsB] = await Promise.all([
-      fast_db.zscore(`fast_ranking:${code}`, idA),
-      fast_db.zscore(`fast_ranking:${code}`, idB)
+      fast_db.zscore(`fast_ranking:${code}`, idA.toString()),
+      fast_db.zscore(`fast_ranking:${code}`, idB.toString())
     ])
     if (pointsA === null || pointsB === null) throw new Error("Player not found in the ranking")
     

@@ -8,7 +8,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const result = await drawing(code)
   if (!result) return
   const [ initialPlayers ] = result
-  await fast_db.del('queue:${code}')
+  await fast_db.del(`queue:${code}`)
 
   return <ClientPart code={code} initialPlayers={initialPlayers} />
 }
