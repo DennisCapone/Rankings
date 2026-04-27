@@ -1,16 +1,17 @@
 import { fast_db } from "@/lib/fast_db";
+import { Pair } from "@/app/algorithms/drawings";
+import { Pipeline } from "@upstash/redis";
 
 // Defining the interfaces for the items and rankings to ensure type safety and better code readability //
 export interface Item {
-  id: bigint;
-  name: string;
-  points: number;
+  id: bigint
+  name: string
+  points: number
 }
 export interface Ranking {
-  code: string;
-  name: string;
-  idA: bigint;
-  idB: bigint;
+  code: string
+  name: string
+  chosens: Pair
 }
 
 // Function to save an item in the ranking //
@@ -35,9 +36,6 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
     // Hash to store ranking details //
     pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
-      lastJackpot: 0,
-      idA: ranking.idA.toString(),
-      idB: ranking.idB.toString(),
     })
 
     await pipeline.exec()

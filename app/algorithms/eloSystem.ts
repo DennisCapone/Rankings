@@ -5,10 +5,9 @@ export async function eloSystem(code: string, aWinned: boolean) {
     const sensibility = 100  // Sensibility factor of the elo system //
 
     // Fetch the current pair of players from Redis and their points //
-    const [ idA, idB] = await Promise.all([
-      fast_db.hget<string>(`ranking:${code}`, "idA"),
-      fast_db.hget<string>(`ranking:${code}`, "idB")
-    ])
+    const data = await fast_db.lpop(`queue:${code}`)
+    if (!data) return null
+    const [ idA, idB ] = JSON.parse(data as string)
     const [ pointsA, pointsB] = await Promise.all([
       fast_db.zscore(`fast_ranking:${code}`, idA),
       fast_db.zscore(`fast_ranking:${code}`, idB)

@@ -129,13 +129,10 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   chosens.p1.name = name1 || "Sconosciuto"
   chosens.p2.name = name2 || "Sconosciuto"
 
-  // Save the current pair as drawn //
+  // Adding the drawned pair to the queue //
+  const data = JSON.stringify({ idA: chosens.p1.id, idB: chosens.p2.id })
   await Promise.all([
-    fast_db.hset(`ranking:${code}`, {
-      idA: chosens.p1.id.toString(),
-      idB: chosens.p2.id.toString()
-    }),
-    fast_db.sadd(`drawn_pairs:${code}`, `${chosens.pairId}`)
+    fast_db.lpush(`queue:${code}`, data)
   ])
 
   return [chosens, jackpot]
