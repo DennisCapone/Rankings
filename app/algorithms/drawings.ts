@@ -132,7 +132,8 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   // Adding the drawned pair to the queue //
   const data = JSON.stringify({ idA: chosens.p1.id, idB: chosens.p2.id })
   await Promise.all([
-    fast_db.lpush(`queue:${code}`, data)
+    fast_db.lpush(`queue:${code}`, data),
+    fast_db.sadd(`drawn_pairs_${code}`, chosens.pairId)
   ])
 
   return [chosens, jackpot]
