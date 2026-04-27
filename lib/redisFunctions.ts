@@ -27,13 +27,15 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
 
       // Hash to store item details //
       pipeline.hset(`item:${item.id.toString()}`, { 
-        name: item.name, 
+        name: item.name,
+        extractions: 0
       })
     })
 
     // Hash to store ranking details //
     pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
+      lastjackpot: 0,
       idA: ranking.idA.toString(),
       idB: ranking.idB.toString(),
     })

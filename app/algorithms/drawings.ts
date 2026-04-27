@@ -2,7 +2,7 @@
 import { fast_db } from "@/lib/fast_db";
 import { syncDBtoRedis } from "@/lib/sync";
 
-  // Define the interfaces for the items and pairs //
+// Define the interfaces for the items and pairs //
 export interface Item {
   id: number,
   score: number, 
@@ -15,13 +15,56 @@ export interface Pair {
   pairId: string
 }
 
-export async function drawingNormal(code: string) {
+export async function drawing(code: string): Promise<[Pair, boolean] | null> {
+  // Defining the probability to get a jackpot //
+  const lastJackpot = await fast_db.hget<string>(`ranking:${code}`, "lastjackpot")
+  let probability = 0
+  switch (lastJackpot) {
+    case "4":
+      probability = 15; break
+    case "5":
+      probability = 30; break
+    case "6":
+      probability = 50; break
+    case "7":
+      probability = 80; break
+    case "8":
+      probability = 100; break
+  }
+
+  // Decide if draw a jackpot based on probability //
+  const random = Math.floor(Math.random() * 101)
+  const jackpot = random < probability
+
+  // Setting the last jackpot //
+  if (!jackpot) {
+    fast_db.hset(`ranking:${code}`, {
+      lastjackpot: (Number(lastJackpot) + 1).toString()
+    })
+  }
+  else {
+    fast_db.hset(`ranking:${code}`, {
+      lastjackpot: "0"
+    })
+  }
+
+  return drawings(code, jackpot)
+}
+
+
+// Function to get a pair of items out from the top 25% of closest scores //
+async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean] | null> {
   // Check if the ranking exists in Redis, if not search it in Supabase //
   const exists = await fast_db.exists(`fast_ranking:${code}`)
   if (!exists) await syncDBtoRedis(code)
 
+  // Catching all the items of the ranking and their points from Redis //
+  const [ rawRanking, drawnPairsRaw ] = await Promise.all([
+    fast_db.smembers<string[]>(`drawn_pairs:${code}`) || [],
+    fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
+  ])
+
   // Fetch the ranking from Redis  //
-  const rawRanking = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   if (!rawRanking || rawRanking.length === 0) return null
 
   // Parse the raw ranking data into a more usable format //
@@ -34,21 +77,20 @@ export async function drawingNormal(code: string) {
   }
 
   // Create the players array with the details of each player //
-  const players: Item[] = await Promise.all(
-    (parsedRanking as { member: string, score: number }[]).map(async (entry) => {
-      return {
-        id: parseInt(entry.member),
-        score: entry.score,
-        name: ""
-      }
+  const players: Item[] = []
+  for (let i = 0; i < parsedRanking.length; i++) {
+    players.push({
+      id: parseInt(parsedRanking[i].member),
+      score: parsedRanking[i].score,
+      name: ""
     })
-  )
+  }
   if (players.length < 2) return null;
   
-  // Fetch all the already drawn pairs for this ranking //
-  const drawnPairsRaw = (await fast_db.smembers<string[]>(`drawn_pairs:${code}`)) || []
-  const drawnSet = new Set(drawnPairsRaw)
 
+  // Fetch all the already drawn pairs for this ranking //
+  const drawnSet = new Set(drawnPairsRaw)
+  
   // Create all the possible pairs of players and filter out the already drawn ones //
   const pairs: Pair[] = []
   for (let i = 0; i < players.length; i++) {
@@ -66,10 +108,15 @@ export async function drawingNormal(code: string) {
   }
   if (pairs.length === 0) return null
   
-  // Exclude the jackpots from the normal drawing //
+  // Exclude the jackpots or the normals pair from the drawing //
   const jackpotPairs = Math.floor(pairs.length * 0.25)
   pairs.sort((a, b) => a.diff - b.diff)
-  pairs.splice(0, jackpotPairs)
+  if (jackpot) {
+    pairs.splice(jackpotPairs, pairs.length - jackpotPairs)
+  }
+  else {
+    pairs.splice(0, jackpotPairs)
+  }
 
   // Randomly select a pair from the remaining //
   const random = Math.floor(Math.random() * pairs.length)
@@ -84,13 +131,13 @@ export async function drawingNormal(code: string) {
   chosens.p2.name = name2 || "Sconosciuto"
 
   // Save the current pair as drawn //
-    await Promise.all([
+  await Promise.all([
     fast_db.hset(`ranking:${code}`, {
       idA: chosens.p1.id.toString(),
       idB: chosens.p2.id.toString()
     }),
-    fast_db.sadd(`drawn_pairs:${code}`, `${chosens.p1.id.toString()}-${chosens.p2.id.toString()}`)
+    fast_db.sadd(`drawn_pairs:${code}`, `${chosens.pairId}`)
   ])
 
-  return chosens
+  return [chosens, jackpot]
 }
