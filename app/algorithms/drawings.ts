@@ -117,9 +117,14 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
     pairs.splice(0, jackpotPairs)
   }
 
-  // Randomly select a pair from the remaining //
+  // Randomly select a pair from the remaining and put it in a random order //
   const random = Math.floor(Math.random() * pairs.length)
   const chosens = pairs[random]
+  if (Math.random() > 0.5) {
+    const temp = chosens.p1
+    chosens.p1 = chosens.p2
+    chosens.p2 = temp
+  }
 
   // Fetch the names of the chosen players //
   const [name1, name2] = await Promise.all([
@@ -133,7 +138,7 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   const data = JSON.stringify({ idA: chosens.p1.id, idB: chosens.p2.id })
   await Promise.all([
     fast_db.lpush(`queue:${code}`, data),
-    fast_db.sadd(`drawn_pairs_${code}`, chosens.pairId)
+    fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId)
   ])
 
   return [chosens, jackpot]

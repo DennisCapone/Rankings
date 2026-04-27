@@ -31,7 +31,9 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   // Prefill the queue with 10 pairs to avoid loading times during the game //
   useEffect(() => {
     const initQueue = async () => {
-      await Promise.all([fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue(), fillQueue()])
+      for (let i = 0; i < 10; i++) {
+        await fillQueue()
+      }  
     }
     initQueue()
   }, [fillQueue])
