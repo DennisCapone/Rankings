@@ -10,8 +10,8 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   // Defining the states for the current and queued pairs //
   const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPlayers)
   const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(false)
-  const [ queue, setQueue ] = useState<(Pair | null)[]>([])
-  const [ jackpot, setJackpot ] = useState<boolean[]>([])
+  const [ pairs, setPairs ] = useState<(Pair | null)[]>([])
+  const [ jackpots, setJackpots ] = useState<boolean[]>([])
 
   // Function to fill the queue with new pairs  //
   const fillQueue = useCallback(async () => {
@@ -20,8 +20,8 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
       if (result) {
         const [ pair, isJackpot ] = result
         if (pair) {
-          setQueue(prev => [...prev, pair])
-          setJackpot(prev => [...prev, isJackpot])
+          setPairs(prev => [...prev, pair])
+          setJackpots(prev => [...prev, isJackpot])
         }
       }
     } 
@@ -41,11 +41,11 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   // Function to handle the vote and update the current pair //
   const handleVote = async (code: string, vote: boolean) => {
     fillQueue()
-    eloSystem(code, vote)
-    setCurrentPair(queue[0])
-    setCurrentJackpot(jackpot[0])
-    setQueue(prev => prev.slice(1))
-    setJackpot(prev => prev.slice(1))
+    eloSystem(code, vote, currentPair?.p1.id || 0, currentPair?.p2.id || 0)
+    setCurrentPair(pairs[0])
+    setCurrentJackpot(jackpots[0])
+    setPairs(prev => prev.slice(1))
+    setJackpots(prev => prev.slice(1))
   }
 
 
