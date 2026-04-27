@@ -17,34 +17,34 @@ export interface Pair {
 
 export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Defining the probability to get a jackpot //
-  const lastJackpot = await fast_db.hget<string>(`ranking:${code}`, "lastjackpot")
+  const lastJackpot = Number(await fast_db.hget<Number>(`ranking:${code}`, 'lastJackpot'))
   let probability = 0
   switch (lastJackpot) {
-    case "4":
+    case 4:
       probability = 15; break
-    case "5":
+    case 5:
       probability = 30; break
-    case "6":
+    case 6:
       probability = 50; break
-    case "7":
+    case 7:
       probability = 80; break
-    case "8":
+    case 8:
       probability = 100; break
   }
 
   // Decide if draw a jackpot based on probability //
-  const random = Math.floor(Math.random() * 101)
-  const jackpot = random < probability
+  const random = Math.floor(Math.random() * 100)
+  const jackpot = random <= probability
 
   // Setting the last jackpot //
   if (!jackpot) {
     fast_db.hset(`ranking:${code}`, {
-      lastjackpot: (Number(lastJackpot) + 1).toString()
+      lastJackpot: (Number(lastJackpot) + 1).toString()
     })
   }
   else {
     fast_db.hset(`ranking:${code}`, {
-      lastjackpot: "0"
+      lastJackpot: "0"
     })
   }
 
@@ -87,7 +87,6 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   }
   if (players.length < 2) return null;
   
-
   // Fetch all the already drawn pairs for this ranking //
   const drawnSet = new Set(drawnPairsRaw)
   

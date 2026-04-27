@@ -35,7 +35,7 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
     // Hash to store ranking details //
     pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
-      lastjackpot: 0,
+      lastJackpot: 0,
       idA: ranking.idA.toString(),
       idB: ranking.idB.toString(),
     })
