@@ -20,7 +20,7 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
       if (!result) return
 
       const [ pair, isJackpot ] = result
-      if (!pair || !isJackpot) throw new Error("No pair found")
+      if (!pair) throw new Error("No pair found")
       setQueue(prev => [...prev, pair])
       setJackpot(prev => [...prev, isJackpot])
       } 
