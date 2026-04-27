@@ -17,7 +17,7 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   const fillQueue = useCallback(async () => {
     try {
       const result = await drawing(code)
-      if (!result) return
+      if (!result) return null
 
       const [ pair, isJackpot ] = result
       if (pair) {
@@ -39,10 +39,10 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   }, [fillQueue])
 
   // Function to handle the vote and update the current pair //
-  const handleVote = (code: string, vote: boolean) => {
-    if (queue.length === 0) return
+  const handleVote = async (code: string, vote: boolean) => {
+    if (queue.length === 0) return null
     fillQueue()
-    eloSystem(code, vote)
+    await eloSystem(code, vote)
     setCurrentPair(queue[0])
     setCurrentJackpot(jackpot[0])
     setQueue(prev => prev.slice(1))
