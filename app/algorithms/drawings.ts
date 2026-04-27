@@ -17,7 +17,7 @@ export interface Pair {
 
 export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Defining the probability to get a jackpot //
-  const lastJackpot = Number(await fast_db.hget<Number>(`ranking:${code}`, 'lastJackpot'))
+  const lastJackpot = await fast_db.hget<number>(`ranking:${code}`, 'lastJackpot')
   let probability = 0
   switch (lastJackpot) {
     case 4:
