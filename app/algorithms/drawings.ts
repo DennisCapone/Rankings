@@ -134,7 +134,7 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   chosens.p1.name = name1 || "Sconosciuto"
   chosens.p2.name = name2 || "Sconosciuto"
 
-  // Adding the drawned pair to the already drawned //
+  // Adding the drawned pair to the already drawneds //
   await Promise.all([
     fast_db.sadd(`drawn_pairs${code}`, chosens.pairId)
   ])
