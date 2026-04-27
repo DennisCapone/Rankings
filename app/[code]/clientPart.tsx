@@ -17,7 +17,7 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   const fillQueue = useCallback(async () => {
     try {
       const result = await drawing(code)
-      if (result) {
+      if (result?.[0]) {
         const [ pair, isJackpot ] = result
         if (pair) {
           setPairs(prev => [...prev, pair])
