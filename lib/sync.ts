@@ -20,8 +20,12 @@ export async function syncDBtoRedis(code: string) {
       const rankingData: Ranking = {
         code: ranking.code,
         name: ranking.name,
-        idA: 0n,
-        idB: 0n,
+        chosens: {
+          p1: { id: 0, name: '', score: 0 },
+          p2: { id: 0, name: '', score: 0 },
+          diff: 0,
+          pairId: ''
+        }
       }
       const items: Item[] = ranking.items.map((item) => ({
         id: BigInt(item.id),
