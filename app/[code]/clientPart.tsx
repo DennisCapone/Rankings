@@ -17,13 +17,13 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
   const fillQueue = useCallback(async () => {
     try {
       const result = await drawing(code)
-      if (!result) return null
-
-      const [ pair, isJackpot ] = result
-      if (pair) {
-        setQueue(prev => [...prev, pair])
-        setJackpot(prev => [...prev, isJackpot])
-      } 
+      if (result) {
+        const [ pair, isJackpot ] = result
+        if (pair) {
+          setQueue(prev => [...prev, pair])
+          setJackpot(prev => [...prev, isJackpot])
+        }
+      }
     } 
     catch (error) { console.error(error) }
   }, [code])
@@ -40,9 +40,8 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   // Function to handle the vote and update the current pair //
   const handleVote = async (code: string, vote: boolean) => {
-    if (queue.length === 0) return null
     fillQueue()
-    await eloSystem(code, vote)
+    eloSystem(code, vote)
     setCurrentPair(queue[0])
     setCurrentJackpot(jackpot[0])
     setQueue(prev => prev.slice(1))
@@ -52,7 +51,6 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   return (
     <>
-
       {currentJackpot && <div className="fixed inset-0 border-20 border-orange-500 pointer-events-none z-[9999]"></div>}
 
       <Link href={`/${code}/ranking`}><div className="mt-40 ml-40"><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></div></Link>
