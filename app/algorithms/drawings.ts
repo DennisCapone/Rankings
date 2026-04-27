@@ -52,7 +52,6 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
 }
 
 
-// Function to get a pair of items out from the top 25% of closest scores //
 async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean] | null> {
   // Check if the ranking exists in Redis, if not search it in Supabase //
   const exists = await fast_db.exists(`fast_ranking:${code}`)
@@ -136,7 +135,7 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
 
   // Adding the drawned pair to the already drawneds //
   await Promise.all([
-    fast_db.sadd(`drawn_pairs${code}`, chosens.pairId)
+    fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId)
   ])
 
   return [chosens, jackpot]
