@@ -59,7 +59,7 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   if (!exists) await syncDBtoRedis(code)
 
   // Catching all the items of the ranking and their points from Redis //
-  const [ rawRanking, drawnPairsRaw ] = await Promise.all([
+  const [ drawnPairsRaw, rawRanking ] = await Promise.all([
     fast_db.smembers<string[]>(`drawn_pairs:${code}`) || [],
     fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   ])
