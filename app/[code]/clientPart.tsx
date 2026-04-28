@@ -6,12 +6,13 @@ import { eloSystem } from "@/app/algorithms/eloSystem"
 import { Pair } from "@/app/algorithms/drawings"
 import { useEffect, useState, useCallback } from "react"
 
-export default function ClientPart({ code, initialPlayers }: { code: string, initialPlayers: Pair | null }) {
+export default function ClientPart({ code, initialPlayers, numPairs }: { code: string, initialPlayers: Pair | null, numPairs: number}) {
   // Defining the states for the current and queued pairs //
   const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPlayers)
   const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(false)
   const [ pairs, setPairs ] = useState<(Pair | null)[]>([])
   const [ jackpots, setJackpots ] = useState<boolean[]>([])
+  const [ exctracted, setExctracted] = useState<number>(0)
 
   // Function to fill the queue with new pairs  //
   const fillQueue = useCallback(async () => {
@@ -40,7 +41,10 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   // Function to handle the vote and update the current pair //
   const handleVote = (code: string, vote: boolean) => {
-    fillQueue()
+    if (exctracted < numPairs-10) {
+      fillQueue()
+    }
+    setExctracted(exctracted+1)
     eloSystem(code, vote, currentPair?.p1.id || 0, currentPair?.p2.id || 0)
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])

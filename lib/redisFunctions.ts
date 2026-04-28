@@ -1,6 +1,5 @@
 import { fast_db } from "@/lib/fast_db";
 import { Pair } from "@/app/algorithms/drawings";
-import { Pipeline } from "@upstash/redis";
 
 // Defining the interfaces for the items and rankings to ensure type safety and better code readability //
 export interface Item {

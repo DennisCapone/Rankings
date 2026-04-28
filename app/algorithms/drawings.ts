@@ -48,11 +48,6 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
     })
   }
 
-  return drawings(code, jackpot)
-}
-
-
-async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean] | null> {
   // Check if the ranking exists in Redis, if not search it in Supabase //
   const exists = await fast_db.exists(`fast_ranking:${code}`)
   if (!exists) await syncDBtoRedis(code)
@@ -117,8 +112,8 @@ async function drawings(code: string, jackpot: boolean): Promise<[Pair, boolean]
   }
 
   // Randomly select a pair from the remaining and put it in a random order //
-  const random = Math.floor(Math.random() * pairs.length)
-  const chosens = pairs[random]
+  const r = Math.floor(Math.random() * pairs.length)
+  const chosens = pairs[r]
   if (Math.random() > 0.5) {
     const temp = chosens.p1
     chosens.p1 = chosens.p2

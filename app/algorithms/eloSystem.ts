@@ -14,6 +14,7 @@ export async function eloSystem(code: string, aWinned: boolean, idA: number, idB
   // Elo algorithm //
   const expA = 1 / (1 + Math.pow(10, (pointsB - pointsA) / 400))
   const aInc = Math.round(aWinned ? sensibility * (1 - expA) : -sensibility * (expA))
+  
   // Update the points of the two players in Redis using a pipeline to ensure atomicity //
   const pipeline = fast_db.pipeline();
   pipeline.zincrby(`fast_ranking:${code}`, aInc, idA);

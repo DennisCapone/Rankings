@@ -8,7 +8,14 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const result = await drawing(code)
   if (!result) return null
   const [ initialPlayers ] = result
-  await fast_db.del(`queue:${code}`)
 
-  return <ClientPart code={code} initialPlayers={initialPlayers} />
+  // Reset the Redis at the open of the page //
+  await fast_db.del(`queue:${code}`)
+  await fast_db.del(`drawn_pairs:${code}`)
+
+  // Defining the number of the pairs //
+  const itemsLength = await fast_db.hlen(`ranking:${code}`)
+  const numPairs = ((itemsLength+1) * (itemsLength/2))
+
+  return <ClientPart code={code} initialPlayers={initialPlayers} numPairs={numPairs} />
 }
