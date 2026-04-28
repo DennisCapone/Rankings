@@ -42,7 +42,7 @@ export default function ClientPart({ code, initialPlayers, numPairs }: { code: s
   // Function to handle the vote and update the current pair //
   const handleVote = (code: string, vote: boolean) => {
     if (exctracted < numPairs-10) {
-      fillQueue()
+      fillQueue(); console.log('benni bestia')
     }
     console.log(pairs)
     setExctracted(exctracted+1)
