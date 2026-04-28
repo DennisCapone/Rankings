@@ -1,9 +1,8 @@
 'use client'
 import Button from '@/components/Button'
 import Link from 'next/link'
-import { drawing } from '@/app/algorithms/drawings'
+import { drawing, Pair } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
-import { Pair } from '@/app/algorithms/drawings'
 import { useState } from 'react'
 
 export default function ClientPart({ code, initialPlayer, initialQueue, initialJackpots, numPairs }: { code: string, initialPlayer: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], numPairs: number}) {
@@ -28,11 +27,9 @@ export default function ClientPart({ code, initialPlayer, initialQueue, initialJ
   }
 
   // Function to handle the vote and update the current pair //
-  const handleVote = async (code: string, vote: boolean) => {
-    await Promise.all([
-      fillQueue(),
-      eloSystem(code, vote)
-    ])
+  const handleVote = (code: string, vote: boolean) => {
+    fillQueue(),
+    eloSystem(code, currentPair?.token || '', vote)
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
     setPairs(prev => prev.slice(1))

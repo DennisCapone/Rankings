@@ -1,6 +1,7 @@
 'use server'
 import { fast_db } from '@/lib/fast_db'
 import { syncDBtoRedis } from '@/lib/sync'
+import { randomUUID } from 'crypto'
 
 // Define the interfaces for the items and pairs //
 export interface Item {
@@ -13,6 +14,7 @@ export interface Pair {
   p2: Item, 
   diff: number,
   pairId: string
+  token: string
 }
 
 
@@ -70,6 +72,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Create all the possible pairs of players and filter out the already drawn ones //
   const drawned = new Set(drawnPairsRaw)
   const pairs: Pair[] = []
+  const token = randomUUID()
   for (let i = 0; i < players.length; i++) {
     for (let j = i + 1; j < players.length; j++) {
       const pairId = (players[i].id < players[j].id) ? `${players[i].id}-${players[j].id}` : `${players[j].id}-${players[i].id}`
@@ -78,7 +81,8 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
           p1: players[i],
           p2: players[j],
           diff: Math.abs(players[i].score - players[j].score), 
-          pairId
+          pairId: pairId,
+          token: token
         })
       }
     }
@@ -109,8 +113,10 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Adding the drawned pair to the already drawneds //
   await Promise.all([
     fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId),
-    fast_db.lpush(`queue:${code}`, chosens.p1.id),
-    fast_db.lpush(`queue:${code}`, chosens.p2.id)
+    fast_db.hset(`token:${token}`, {
+      idA: chosens.p1.id,
+      idB: chosens.p2.id
+    })
   ])
 
   return [chosens, jackpot]
