@@ -44,7 +44,7 @@ export default function ClientPart({ code, initialPlayer, initialQueue, initialJ
 
       <Link href={`/${code}/ranking`}><div className='mt-20 ml-10'><Button textcolor='' bcolor='' text='classifica' color='bg-green-500' /></div></Link>
 
-      {<div className='mt-20 ml-40'> <h1> {playedPairs}/{numPairs} </h1> </div>}
+      {<div className='mt-20 ml-[200px]'> <h1> {playedPairs}/{numPairs} </h1> </div>}
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
         <button onClick={() => { handleVote(code, true), setPlayedPairs(playedPairs+1) }}>
