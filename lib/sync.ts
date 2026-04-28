@@ -24,7 +24,8 @@ export async function syncDBtoRedis(code: string) {
           p1: { id: 0, name: '', score: 0 },
           p2: { id: 0, name: '', score: 0 },
           diff: 0,
-          pairId: ''
+          pairId: '',
+          token: ''
         }
       }
       const items: Item[] = ranking.items.map((item) => ({
