@@ -17,7 +17,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const initialJackpots: boolean[] = []
   for (let i = 0; i < 9; i++) {
     const result = await drawing(code)
-    if (!result) return null
+    if (!result) break
     const [ queue, jackpot ] = result
     initialQueue.push(queue)
     initialJackpots.push(jackpot)
