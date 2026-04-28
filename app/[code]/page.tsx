@@ -24,7 +24,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   }
 
   // Defining the number of the pairs //
-  const itemsLength = await fast_db.hlen(`fast_ranking:${code}`)
+  const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
   const numPairs = ((itemsLength) * ((itemsLength-1)/2))
 
   return <ClientPart code={code} initialPlayer={initialPlayer} numPairs={numPairs} initialQueue={initialQueue} initialJackpots={initialJackpots} />
