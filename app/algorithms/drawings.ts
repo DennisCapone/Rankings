@@ -130,7 +130,9 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
 
   // Adding the drawned pair to the already drawneds //
   await Promise.all([
-    fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId)
+    fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId),
+    fast_db.lpush(`queue:${code}`, chosens.p1.id),
+    fast_db.lpush(`queue:${code}`, chosens.p2.id)
   ])
 
   return [chosens, jackpot]
