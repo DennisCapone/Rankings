@@ -13,7 +13,7 @@ export async function syncDBtoRedis(code: string) {
       where: { code },
       include: { items: true },
     })
-    if (!ranking) throw new Error("Ranking not found in the database")
+    if (!ranking) throw new Error('Ranking not found in the database')
 
     // Save the ranking and the items in Redis //
     try {
@@ -33,7 +33,7 @@ export async function syncDBtoRedis(code: string) {
         points: item.points,
       }))
       await saveInRanking(rankingData, items)
-    } catch (error) { throw new Error("Error occurred while syncing rankings: " + error) }
+    } catch (error) { throw new Error('Error occurred while syncing rankings: ' + error) }
   }
 }
 
@@ -49,7 +49,7 @@ export async function syncRedisToDB(code: string) {
 
     // Take all the items ids from Redis //
     const itemIds = await fast_db.zrange(`fast_ranking:${code}`, 0, -1)
-    if (itemIds.length === 0) return;
+    if (itemIds.length === 0) return null
 
     // Updating points //
     const updateQueries: Prisma.Prisma__ItemClient<ItemPrisma>[] = []
@@ -69,6 +69,6 @@ export async function syncRedisToDB(code: string) {
     })
     await db.$transaction(updateQueries)
   } catch (error) {
-    console.error("Errore durante la sincronizzazione da Redis a DB:", error)
+    console.error('Errore durante la sincronizzazione da Redis a DB:', error)
   }
 }

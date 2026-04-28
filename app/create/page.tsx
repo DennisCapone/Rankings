@@ -1,21 +1,21 @@
 'use client'
-import Button from '@/components/Button';
-import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { addRanking } from '@/app/actions';
+import Button from '@/components/Button'
+import Link from 'next/link'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { addRanking } from '@/app/actions'
 
 export default function Create() {
   const router = useRouter()    // Next.js router for navigation //
 
   // State for the list of items and the name of the ranking //
   const [items, setItems] = useState(['', ''])
-  const [name, setName] = useState("")
+  const [name, setName] = useState('')
 
   // Functions to manage the list of items //
   const add = () => {
-    if (items[items.length - 1] !== "" && items[0] !== "") {
-      setItems([...items, ""])
+    if (items[items.length - 1] !== '' && items[0] !== '') {
+      setItems([...items, ''])
     }
   }
   const remove = (index: number) => {
@@ -30,7 +30,7 @@ export default function Create() {
     const newItems = [...items]
     newItems[index] = value
     setItems(newItems)
-    if (value == "") {
+    if (value == '') {
       remove(index)
     }
   }
@@ -45,9 +45,9 @@ export default function Create() {
   return (
     <>
       <div className='flex justify-center mt-30'><input
-        type="text"
+        type='text'
         onChange={e => (handleNameChange(e.target.value))}
-        placeholder="Nome"
+        placeholder='Nome'
         className='mr-3 border-black border-solid border-2 h-14 text-xl outline-none rounded-xl'/>
       </div>
 
@@ -55,7 +55,7 @@ export default function Create() {
       {items.map((item, i) => (
         <div key={i} className='mb-3 ml-3 flex justify-center'>
           <input
-            type="text"
+            type='text'
             value={item}
             onChange={e => (handleChange(e.target.value, i))}
             placeholder={`Elemento ${i + 1}`}
@@ -78,13 +78,13 @@ export default function Create() {
         <button 
           onClick={Save}
           className='flex justify-center mt-30'>
-          <Button text="CREA" color='bg-blue-700' textcolor='text-white' bcolor='' />
+          <Button text='CREA' color='bg-blue-700' textcolor='text-white' bcolor='' />
         </button>
       </div>
 
-      <Link href="/">
+      <Link href='/'>
         <div className='flex justify-center mt-3'>
-          <Button text="Torna indietro" color="bg-red-300" textcolor='' bcolor='' />
+          <Button text='Torna indietro' color='bg-red-300' textcolor='' bcolor='' />
         </div>
       </Link>
     </>

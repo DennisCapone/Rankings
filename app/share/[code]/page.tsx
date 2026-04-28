@@ -21,12 +21,12 @@ export default async function Share({ params }: { params: Promise<{ code: string
 
       <Link href={`/${code}`}>
         <div className='flex justify-center mt-100'>
-          <Button text="GIOCA" color="bg-blue-400" bcolor='' textcolor='' />
+          <Button text='GIOCA' color='bg-blue-400' bcolor='' textcolor='' />
         </div>
       </Link>
-      <Link href="/">
+      <Link href='/'>
         <div className='flex justify-center mt-5'>
-          <Button text="Torna indietro" color="bg-red-300" bcolor='' textcolor='' />
+          <Button text='Torna indietro' color='bg-red-300' bcolor='' textcolor='' />
         </div>
       </Link>
     </>

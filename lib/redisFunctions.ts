@@ -1,5 +1,5 @@
-import { fast_db } from "@/lib/fast_db";
-import { Pair } from "@/app/algorithms/drawings";
+import { fast_db } from '@/lib/fast_db'
+import { Pair } from '@/app/algorithms/drawings'
 
 // Defining the interfaces for the items and rankings to ensure type safety and better code readability //
 export interface Item {
@@ -39,6 +39,6 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
 
     await pipeline.exec()
   } catch (error) { 
-    throw new Error("Error during the saving process: " + error)
+    throw new Error('Error during the saving process: ' + error)
   }
 }

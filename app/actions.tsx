@@ -1,5 +1,5 @@
 'use server'
-import { db } from "@/lib/db";
+import { db } from '@/lib/db'
 
 // Function to check if a ranking code exists in the database //
 export async function checkCode(code: string) {
@@ -12,21 +12,21 @@ export async function checkCode(code: string) {
 export async function addRanking(items: string[], name: string) {
 
   // Generate a unique 8-character code for the ranking //
-  let code = ""
+  let code = ''
   let check = true
   while (check) {
     for (let ind = 0; ind < 8; ind++) {
       code += String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1) + 65))
     }
     if (!await checkCode(code)) check = false
-    else code = ""
+    else code = ''
   }
   
   // Create the new ranking in the database with the generated code, name, and items //
   await db.ranking.create({
     data: {
       name: name,
-      creator: "Dennis Capone",
+      creator: 'Dennis Capone',
       code: code,
       elements: items.length,
       items: {

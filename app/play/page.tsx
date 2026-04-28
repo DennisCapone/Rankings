@@ -1,10 +1,10 @@
-"use client";
-import Button from "@/components/Button"
-import Link from "next/link";
-import { useState } from "react";
+'use client'
+import Button from '@/components/Button'
+import Link from 'next/link'
+import { useState } from 'react'
 
 export default function Play() {
-  const [code, codeSet] = useState("")  // State for the code input by the user //
+  const [code, codeSet] = useState('')  // State for the code input by the user //
 
   // Manage the change of the user input //
   const handleChange = (value: string) => {
@@ -16,13 +16,13 @@ export default function Play() {
 
   return (
     <>
-      <div className="flex justify-center">
-        <h1 className="text-3xl mt-20"> Inserisci il codice: </h1>
+      <div className='flex justify-center'>
+        <h1 className='text-3xl mt-20'> Inserisci il codice: </h1>
       </div>
 
-      <div className="flex justify-center mt-10">
+      <div className='flex justify-center mt-10'>
         <input
-          type="text"
+          type='text'
           className='mr-3 border-black border-solid border-2 h-14 text-xl outline-none rounded-xl pl-5 pr-5'
           onChange={e => (handleChange(e.target.value))}
           value={code}
@@ -31,12 +31,12 @@ export default function Play() {
 
       <Link href={`/${code}`}>
         <div className='flex justify-center mt-5'>
-          <Button textcolor="" bcolor="" text="GIOCA" color="bg-blue-300" />
+          <Button textcolor='' bcolor='' text='GIOCA' color='bg-blue-300' />
         </div>
       </Link>
-      <Link href="/">
+      <Link href='/'>
         <div className='flex justify-center mt-70'>
-          <Button textcolor="" bcolor="" text="Torna indietro" color="bg-red-300" />
+          <Button textcolor='' bcolor='' text='Torna indietro' color='bg-red-300' />
         </div>
       </Link>
     </>
