@@ -12,7 +12,6 @@ export default function ClientPart({ code, initialPlayers, numPairs }: { code: s
   const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(false)
   const [ pairs, setPairs ] = useState<(Pair | null)[]>([])
   const [ jackpots, setJackpots ] = useState<boolean[]>([])
-  const [ exctracted, setExctracted] = useState<number>(0)
 
   // Function to fill the queue with new pairs  //
   const fillQueue = useCallback(async () => {
@@ -20,10 +19,11 @@ export default function ClientPart({ code, initialPlayers, numPairs }: { code: s
       const result = await drawing(code)
       if (result?.[0]) {
         const [ pair, isJackpot ] = result
-        if (pair) {
-          setPairs(prev => [...prev, pair])
-          setJackpots(prev => [...prev, isJackpot])
-        }
+        setPairs(prev => [...prev, pair])
+        setJackpots(prev => [...prev, isJackpot])
+      }
+      else {
+        console.log('benni quella bestia')
       }
     } 
     catch (error) { console.error('fillQueue error: ' + error) }
@@ -41,11 +41,8 @@ export default function ClientPart({ code, initialPlayers, numPairs }: { code: s
 
   // Function to handle the vote and update the current pair //
   const handleVote = (code: string, vote: boolean) => {
-    if (exctracted < numPairs-10) {
-      fillQueue(); console.log('benni bestia')
-    }
+    fillQueue()
     console.log(pairs)
-    setExctracted(exctracted+1)
     eloSystem(code, vote)
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
