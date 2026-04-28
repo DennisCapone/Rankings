@@ -40,7 +40,7 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   // Function to handle the vote and update the current pair //
   const handleVote = async (code: string, vote: boolean) => {
-    fillQueue()
+    await fillQueue()
     eloSystem(code, vote, currentPair?.p1.id || 0, currentPair?.p2.id || 0)
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
