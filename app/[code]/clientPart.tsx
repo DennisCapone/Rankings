@@ -25,22 +25,22 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
         }
       }
     } 
-    catch (error) { console.error(error) }
+    catch (error) { console.error('fillQueue error: ' + error) }
   }, [code])
 
   // Prefill the queue with 10 pairs to avoid loading times during the game //
   useEffect(() => {
     const initQueue = async () => {
       for (let i = 0; i < 10; i++) {
-        await fillQueue()
-      }  
+        fillQueue()
+      } 
     }
     initQueue()
   }, [fillQueue])
 
   // Function to handle the vote and update the current pair //
-  const handleVote = async (code: string, vote: boolean) => {
-    await fillQueue()
+  const handleVote = (code: string, vote: boolean) => {
+    fillQueue()
     eloSystem(code, vote, currentPair?.p1.id || 0, currentPair?.p2.id || 0)
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
@@ -51,9 +51,9 @@ export default function ClientPart({ code, initialPlayers }: { code: string, ini
 
   return (
     <>
-      {currentJackpot && <div className="fixed inset-0 border-20 border-orange-500 pointer-events-none z-[9999]"></div>}
+      {currentJackpot && <div className="fixed inset-0 border-40 border-orange-500 pointer-events-none z-[9999]"></div>}
 
-      <Link href={`/${code}/ranking`}><div className="mt-40 ml-40"><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></div></Link>
+      <Link href={`/${code}/ranking`}><div className="mt-20 ml-20"><Button textcolor="" bcolor="" text="classifica" color="bg-green-500" /></div></Link>
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
         <button onClick={() => { handleVote(code, true) }}>
