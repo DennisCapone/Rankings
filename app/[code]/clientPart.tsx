@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { drawing } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
 import { Pair } from '@/app/algorithms/drawings'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 export default function ClientPart({ code, initialPlayer, initialQueue, initialJackpots, numPairs }: { code: string, initialPlayer: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], numPairs: number}) {
   // Defining the states for the current and queued pairs //
@@ -15,7 +15,7 @@ export default function ClientPart({ code, initialPlayer, initialQueue, initialJ
   const [ jackpots, setJackpots ] = useState<boolean[]>(initialJackpots)
 
   // Function to fill the queue with new pairs  //
-  const fillQueue = useCallback(async () => {
+  const fillQueue = async () => {
     try {
       const result = await drawing(code)
       if (result?.[0]) {
@@ -25,12 +25,14 @@ export default function ClientPart({ code, initialPlayer, initialQueue, initialJ
       }
     } 
     catch (error) { console.error('fillQueue error: ' + error) }
-  }, [code])
+  }
 
   // Function to handle the vote and update the current pair //
-  const handleVote = (code: string, vote: boolean) => {
-    fillQueue()
-    eloSystem(code, vote)
+  const handleVote = async (code: string, vote: boolean) => {
+    await Promise.all([
+      fillQueue(),
+      eloSystem(code, vote)
+    ])
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
     setPairs(prev => prev.slice(1))
