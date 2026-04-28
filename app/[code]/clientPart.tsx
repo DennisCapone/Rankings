@@ -44,6 +44,7 @@ export default function ClientPart({ code, initialPlayers, numPairs }: { code: s
     if (exctracted < numPairs-10) {
       fillQueue()
     }
+    console.log(pairs)
     setExctracted(exctracted+1)
     eloSystem(code, vote, currentPair?.p1.id || 0, currentPair?.p2.id || 0)
     setCurrentPair(pairs[0])
