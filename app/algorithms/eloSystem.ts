@@ -28,6 +28,9 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
     fast_db.zscore(`fast_ranking:${code}`, idB.toString())
   ])
   if (pointsA === null || pointsB === null) throw new Error('Player not found in the ranking')
+
+  const pendingPairs = await fast_db.get<string[]>(`pending_queue:${code}:${sessionId}`) || []
+  const updatedPendingPairs = pendingPairs.filter((id) => id !== pair.pairId)
  
   // Elo algorithm //
   const expA = 1 / (1 + Math.pow(10, (pointsB - pointsA) / 400))
@@ -41,7 +44,7 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
 
   // Putting the pair in the drawned pairs and remove that from the pendings pair //
   await Promise.all ([
-    await fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId),
-    await fast_db.srem(`pending_queue:${code}:${sessionId}`, pair.pairId)
+    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId),
+    fast_db.set(`pending_queue:${code}:${sessionId}`, updatedPendingPairs)
   ]) 
 }

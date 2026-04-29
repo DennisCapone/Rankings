@@ -48,9 +48,9 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   !exist && await syncDBtoRedis(code)
 
   // Catching all the items of the ranking and their points from Redis //
-  const [ drawnPairsRaw, drawnPendingPairsRaw , rawRanking ] = await Promise.all([
+  const [ drawnPairsRaw, pendingPairs , rawRanking ] = await Promise.all([
     fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || [],
-    fast_db.smembers<string[]>(`pending_queue:${code}:${sessionId}`) || [],
+    fast_db.get<string[]>(`pending_queue:${code}:${sessionId}`) || [],
     fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   ])
   if (!rawRanking || rawRanking.length === 0) return null
@@ -77,13 +77,12 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   
   // Create all the possible pairs of players and filter out the already drawn ones //
   const drawned = new Set(drawnPairsRaw)
-  const pending = new Set (drawnPendingPairsRaw)
   const pairs: Pair[] = []
   const token = randomUUID()
   for (let i = 0; i < players.length; i++) {
     for (let j = i + 1; j < players.length; j++) {
       const pairId = (players[i].id < players[j].id) ? `${players[i].id}-${players[j].id}` : `${players[j].id}-${players[i].id}`
-      if ((!drawned.has(pairId)) && (!pending.has(pairId))) {
+      if ((!drawned.has(pairId)) && (!pendingPairs?.includes(pairId))) {
         pairs.push({
           p1: players[i],
           p2: players[j],
@@ -120,8 +119,9 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   chosens.p2.name = name2 || 'Unknown'
 
   // Adding the drawned pair to the pending queue //
+  pendingPairs?.push(chosens.pairId)
   await Promise.all([
-    fast_db.sadd(`pending_queue:${code}:${sessionId}`, chosens.pairId),
+    fast_db.set(`pending_queue:${code}:${sessionId}`, pendingPairs),
     fast_db.hset(`token:${token}`, {
       idA: chosens.p1.id,
       idB: chosens.p2.id,
