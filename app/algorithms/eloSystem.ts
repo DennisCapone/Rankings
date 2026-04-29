@@ -1,6 +1,7 @@
 'use server'
 import { fast_db } from '@/lib/fast_db'
 import { cookies } from 'next/headers'
+import { Pair } from './drawings'
 
 export async function eloSystem(code: string, token: string, aWinned: boolean) {
   const sensibility = 100  // Sensibility factor of the elo system //
@@ -46,7 +47,7 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   // Move the current pair and the queue //
   await fast_db.del(`current_pair:${code}:${sessionId}`);
   const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`);
-  let activeQueue: { pair: any, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
+  const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
   if (activeQueue.length > 0) {
     const nextObj = activeQueue.shift();
     if (nextObj) {
