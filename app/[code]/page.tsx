@@ -3,7 +3,6 @@ import { drawing } from '@/app/algorithms/drawings'
 import { fast_db } from '@/lib/fast_db'
 import { Pair } from '@/app/algorithms/drawings'
 import { cookies } from 'next/headers'
-import { newSession } from '@/app/actions'
 
 export default async function Play({ params }: { params: Promise<{ code: string }> }) {
   // Call all the client part from another component to be able to prefetche data and avoid loading times //
@@ -12,9 +11,6 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   // Check if the user have a session id and, in case, create it //
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('session')?.value
-  if (!sessionId) {
-    newSession()
-  }
 
   // Looking for a pending queue //
   const pendingQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)

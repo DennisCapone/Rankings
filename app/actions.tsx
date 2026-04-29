@@ -42,13 +42,3 @@ export async function addRanking(items: string[], name: string) {
   
   return code
 }
-
-
-// Function to generate a new session //
-export async function newSession() {
-  const sessionId = randomUUID();
-  (await cookies()).set('session', sessionId, {
-    httpOnly: true,
-  })
-  return sessionId
-}
