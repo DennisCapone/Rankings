@@ -22,7 +22,7 @@ export interface Pair {
 export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Get the sessionId //
   const cookieStore = await cookies()
-  let sessionId = cookieStore.get('session')?.value
+  const sessionId = cookieStore.get('session')?.value
   
   // Defining the probability to get a jackpot //
   const lastJackpot = await fast_db.hget<number>(`ranking:${code}:${sessionId}`, 'lastJackpot')
@@ -48,8 +48,9 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   !exist && await syncDBtoRedis(code)
 
   // Catching all the items of the ranking and their points from Redis //
-  const [ drawnPairsRaw, rawRanking ] = await Promise.all([
+  const [ drawnPairsRaw, drawnPendingPairsRaw , rawRanking ] = await Promise.all([
     fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || [],
+    fast_db.smembers<string[]>(`pending_queue:${code}:${sessionId}`) || [],
     fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   ])
   if (!rawRanking || rawRanking.length === 0) return null
@@ -76,12 +77,13 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   
   // Create all the possible pairs of players and filter out the already drawn ones //
   const drawned = new Set(drawnPairsRaw)
+  const pending = new Set (drawnPendingPairsRaw)
   const pairs: Pair[] = []
   const token = randomUUID()
   for (let i = 0; i < players.length; i++) {
     for (let j = i + 1; j < players.length; j++) {
       const pairId = (players[i].id < players[j].id) ? `${players[i].id}-${players[j].id}` : `${players[j].id}-${players[i].id}`
-      if (!drawned.has(pairId)) {
+      if ((!drawned.has(pairId)) && (!pending.has(pairId))) {
         pairs.push({
           p1: players[i],
           p2: players[j],
@@ -114,15 +116,6 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   ])
   chosens.p1.name = name1 || 'Unknown'
   chosens.p2.name = name2 || 'Unknown'
-
-  // Adding the drawned pair to the already drawneds //
-  await Promise.all([
-    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, chosens.pairId),
-    fast_db.hset(`token:${token}`, {
-      idA: chosens.p1.id,
-      idB: chosens.p2.id
-    })
-  ])
 
   return [chosens, jackpot]
 }

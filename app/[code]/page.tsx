@@ -11,7 +11,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
 
   // Check if the user have a session id and, in case, create it //
   const cookieStore = await cookies()
-  let sessionId = cookieStore.get('session')?.value
+  const sessionId = cookieStore.get('session')?.value
   if (!sessionId) {
     newSession()
   }
