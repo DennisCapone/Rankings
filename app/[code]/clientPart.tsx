@@ -3,7 +3,7 @@ import Button from '@/components/Button'
 import Link from 'next/link'
 import { drawing, Pair } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 export default function ClientPart({ code, initialPair, initialQueue, initialJackpots, numPairs }: { code: string, initialPair: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], numPairs: number}) {
   // Defining the states for the current and queued pairs //
@@ -26,14 +26,23 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
     catch (error) { console.error('fillQueue error: ' + error) }
   }
 
+  const serverQueue = useRef<Promise<void>>(Promise.resolve())
+
+
   // Function to handle the vote and update the current pair //
-  const handleVote = (code: string, vote: boolean) => {
-    fillQueue(),
-    eloSystem(code, currentPair?.token || '', vote)
+  const handleVote = async (code: string, vote: boolean) => {
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])
     setPairs(prev => prev.slice(1))
     setJackpots(prev => prev.slice(1))
+    serverQueue.current = serverQueue.current.then(async () => {
+      try {
+        await eloSystem(code, currentPair?.token || '', vote)
+        await fillQueue()
+      } catch (error) {
+        console.error("Syncronization error: ", error)
+      }
+    })
   }
 
 

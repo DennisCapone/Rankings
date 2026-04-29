@@ -19,10 +19,18 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
     ? (typeof pendingQueueStr === 'string' ? JSON.parse(pendingQueueStr) : pendingQueueStr) : []
 
+  const currentPairStr = await fast_db.get<string>(`current_pair:${code}:${sessionId}`)
+  let currentPair: Pair | null = currentPairStr 
+    ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
+
   // Calling the initial queue (9 + 1 elements) to prefetch it in background //
   const needed = 10 - pendingQueue.length
   const initialQueue: Pair[] = pendingQueue.map(q => q.pair)
   const initialJackpots: boolean[] = pendingQueue.map(q => q.jackpot)
+  if (!currentPair && initialQueue.length > 0) {
+    currentPair = initialQueue.shift() ?? null;
+    initialJackpots.shift();
+  }
   for (let i = 0; i < needed; i++) {
     const result = await drawing(code)
     if (!result) break
@@ -37,7 +45,10 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     initialJackpots.shift()
   }
 
-  // Save the first pair in Redis
+  // Save all the pairs in Redis // 
+  if (currentPair) {
+    await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair))
+  }
   const queueToSave = initialQueue.map((pair, i) => ({
     pair: pair,
     jackpot: false

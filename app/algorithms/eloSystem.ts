@@ -1,6 +1,5 @@
 'use server'
 import { fast_db } from '@/lib/fast_db'
-import { SRemCommand } from '@upstash/redis'
 import { cookies } from 'next/headers'
 
 export async function eloSystem(code: string, token: string, aWinned: boolean) {
@@ -9,7 +8,6 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   // Take the session id //
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('session')?.value
-
 
   // Taking the ids from Redis
   const pair = await fast_db.hgetall(`token:${token}`)
@@ -41,6 +39,21 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   pipeline.zincrby(`fast_ranking:${code}`, aInc, idA.toString())
   pipeline.zincrby(`fast_ranking:${code}`, -aInc, idB.toString())
   await pipeline.exec()
+
+
+  await fast_db.del(`current_pair:${code}:${sessionId}`);
+  
+  // Move the current pair and the queue //
+  await fast_db.del(`current_pair:${code}:${sessionId}`);
+  const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`);
+  let activeQueue: { pair: any, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
+  if (activeQueue.length > 0) {
+    const nextObj = activeQueue.shift();
+    if (nextObj) {
+      await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(nextObj.pair));
+      await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue));
+    }
+  }
 
   // Putting the pair in the drawned pairs and remove that from the pendings pair //
   await Promise.all ([
