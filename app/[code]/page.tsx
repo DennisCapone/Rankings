@@ -15,7 +15,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const sessionId = cookieStore.get('session')?.value
 
   // Looking for a pending queue //
-  const pendingQueueStr = await fast_db.get<string>(`pending_queue:${code}:${sessionId}`)
+  const pendingQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
   let pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
     ? (typeof pendingQueueStr === 'string' ? JSON.parse(pendingQueueStr) : pendingQueueStr) : []
 
@@ -61,7 +61,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     pair: pair,
     jackpot: initialJackpots[i]
   }))
-  await fast_db.set(`pending_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
 
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)

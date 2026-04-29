@@ -28,7 +28,7 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   ])
   if (pointsA === null || pointsB === null) throw new Error('Player not found in the ranking')
 
-  const pendingPairs = await fast_db.get<string[]>(`pending_queue:${code}:${sessionId}`) || []
+  const pendingPairs = await fast_db.get<string[]>(`active_queue:${code}:${sessionId}`) || []
   const updatedPendingPairs = pendingPairs.filter((id) => id !== pair.pairId)
  
   // Elo algorithm //
@@ -43,15 +43,15 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   
   // Move the current pair and the queue //
   await fast_db.del(`current_pair:${code}:${sessionId}`)
-  const activeQueueStr = await fast_db.get<string>(`pending_queue:${code}:${sessionId}`)
+  const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
   const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
   if (activeQueue.length > 0) {
     const nextObj = activeQueue.shift()
     if (nextObj) {
       await Promise.all([
         fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(nextObj.pair)),
-        fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(nextObj.jackpot)),
-        fast_db.set(`pending_queue:${code}:${sessionId}`, JSON.stringify(activeQueue))
+        fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(nextObj.jackpot)),
+        fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue))
       ])
     }
   }
