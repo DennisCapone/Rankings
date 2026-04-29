@@ -1,5 +1,6 @@
 'use server'
 import { fast_db } from '@/lib/fast_db'
+import { SRemCommand } from '@upstash/redis'
 import { cookies } from 'next/headers'
 
 export async function eloSystem(code: string, token: string, aWinned: boolean) {
@@ -34,17 +35,13 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
 
   // Update the points of the two players in Redis using a pipeline to ensure atomicity //
   const pipeline = fast_db.pipeline()
-  pipeline.zincrby(`fast_ranking:${code}`, aInc, idA)
-  pipeline.zincrby(`fast_ranking:${code}`, -aInc, idB)
+  pipeline.zincrby(`fast_ranking:${code}`, aInc, idA.toString())
+  pipeline.zincrby(`fast_ranking:${code}`, -aInc, idB.toString())
   await pipeline.exec()
 
-  // Putting the pair in the drawned pairs //
-  await Promise.all([
-    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId),
-    fast_db.hset(`token:${token}`, {
-      idA: pair.idA,
-      idB: pair.idB
-    })
-  ])
-
+  // Putting the pair in the drawned pairs and remove that from the pendings pair //
+  await Promise.all ([
+    await fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId),
+    await fast_db.srem(`pending_queue:${code}:${sessionId}`, pair.pairId)
+  ]) 
 }

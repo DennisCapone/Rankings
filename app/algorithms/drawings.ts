@@ -117,5 +117,16 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   chosens.p1.name = name1 || 'Unknown'
   chosens.p2.name = name2 || 'Unknown'
 
+  // Adding the drawned pair to the pending queue //
+  await Promise.all([
+    fast_db.sadd(`pending_queue:${code}:${sessionId}`, chosens.pairId),
+    fast_db.hset(`token:${token}`, {
+      idA: chosens.p1.id,
+      idB: chosens.p2.id,
+      pairId: chosens.pairId
+    })
+  ])
+  
+
   return [chosens, jackpot]
 }
