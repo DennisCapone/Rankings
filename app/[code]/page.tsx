@@ -3,10 +3,12 @@ import { drawing } from '@/app/algorithms/drawings'
 import { fast_db } from '@/lib/fast_db'
 import { Pair } from '@/app/algorithms/drawings'
 import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
 
 export default async function Play({ params }: { params: Promise<{ code: string }> }) {
   // Call all the client part from another component to be able to prefetche data and avoid loading times //
   const { code } = await params
+  if (code.length !== 8) notFound()
 
   // Check if the user have a session id and, in case, create it //
   const cookieStore = await cookies()

@@ -97,9 +97,11 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   if (pairs.length === 0) return null
   
   // Exclude the jackpots (10%) or the normals pair from the drawing //
-  const jackpotPairs = Math.ceil(pairs.length * 0.10)
-  pairs.sort((a, b) => a.diff - b.diff)
-  jackpot ? pairs.splice(jackpotPairs, pairs.length - jackpotPairs) : pairs.splice(0, jackpotPairs)
+  if (pairs.length > 1) {
+    const jackpotPairs = Math.ceil(pairs.length * 0.10)
+    pairs.sort((a, b) => a.diff - b.diff)
+    jackpot ? pairs.splice(jackpotPairs, pairs.length - jackpotPairs) : pairs.splice(0, jackpotPairs)
+  }
 
   // Randomly select a pair from the remaining and put it in a random order //
   const chosens = pairs[Math.floor(Math.random() * pairs.length)]
