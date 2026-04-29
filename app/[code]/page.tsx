@@ -63,6 +63,12 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   }))
   await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
 
+  // //
+  const validPendingPairs: string[] = []
+  if (currentPair) validPendingPairs.push(currentPair.pairId)
+  initialQueue.forEach(q => validPendingPairs.push(q.pairId))
+  await fast_db.set(`pending_queue:${code}:${sessionId}`, validPendingPairs)
+
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
   const numPairs = ((itemsLength) * ((itemsLength-1)/2))

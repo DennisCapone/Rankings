@@ -28,7 +28,7 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   ])
   if (pointsA === null || pointsB === null) throw new Error('Player not found in the ranking')
 
-  const pendingPairs = await fast_db.get<string[]>(`active_queue:${code}:${sessionId}`) || []
+  const pendingPairs = await fast_db.get<string[]>(`pending_queue:${code}:${sessionId}`) || []
   const updatedPendingPairs = pendingPairs.filter((id) => id !== pair.pairId)
  
   // Elo algorithm //
