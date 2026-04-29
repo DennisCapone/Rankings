@@ -22,14 +22,12 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
         setPairs(prev => [...prev, pair])
         setJackpots(prev => [...prev, isJackpot])
       }
-    } 
+    }
     catch (error) { console.error('fillQueue error: ' + error) }
   }
 
-  const serverQueue = useRef<Promise<void>>(Promise.resolve())
-
-
   // Function to handle the vote and update the current pair //
+  const serverQueue = useRef<Promise<void>>(Promise.resolve())
   const handleVote = async (code: string, vote: boolean) => {
     setCurrentPair(pairs[0])
     setCurrentJackpot(jackpots[0])

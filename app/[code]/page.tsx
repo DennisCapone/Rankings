@@ -15,18 +15,27 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const sessionId = cookieStore.get('session')?.value
 
   // Looking for a pending queue //
-  const pendingQueueStr = await fast_db.get<string[]>(`active_queue:${code}:${sessionId}`)
-  const pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
+  const pendingQueueStr = await fast_db.get<string>(`pending_queue:${code}:${sessionId}`)
+  let pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
     ? (typeof pendingQueueStr === 'string' ? JSON.parse(pendingQueueStr) : pendingQueueStr) : []
 
   const currentPairStr = await fast_db.get<string>(`current_pair:${code}:${sessionId}`)
-  const currentPair: Pair | null = currentPairStr 
+  let currentPair: Pair | null = currentPairStr 
     ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
   const currentJackpotStr = await fast_db.get<boolean>(`current_jackpot:${code}:${sessionId}`)
-  const currentJackpot: boolean | null = (currentJackpotStr || false )?? null
+  let currentJackpot: boolean | null = (currentJackpotStr || false ) ?? null
+
+  // 
+  const drawnPairsRaw = await fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || []
+  const drawned = new Set(drawnPairsRaw)
+  if (currentPair && drawned.has(currentPair.pairId)) {
+    currentPair = null
+    currentJackpot = false
+  }
+  pendingQueue = pendingQueue.filter(q => !drawned.has(q.pair.pairId))
 
   // Calling the initial queue (9 + 1 elements) to prefetch it in background //
-  const needed = 10 - pendingQueue.length
+  const needed = 9 - pendingQueue.length
   const initialQueue: Pair[] = pendingQueue.map(q => q.pair)
   const initialJackpots: boolean[] = pendingQueue.map(q => q.jackpot)
   for (let i = 0; i < needed; i++) {
@@ -37,10 +46,10 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     initialJackpots.push(jackpot)
   }
 
-  const initialPair = currentPair ?? initialQueue[0] ?? null
-  if (initialQueue.length > 0 && !currentPair) {
-    initialQueue.shift()
-    initialJackpots.shift()
+  // If there isn't a current pair, take it from the queue //
+  if (!currentPair) {
+    currentPair = initialQueue.shift() ?? null
+    currentJackpot = initialJackpots.shift() ?? false
   }
 
   // Save all the pairs in Redis // 
@@ -52,11 +61,18 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     pair: pair,
     jackpot: initialJackpots[i]
   }))
-  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
+  await fast_db.set(`pending_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
 
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
   const numPairs = ((itemsLength) * ((itemsLength-1)/2))
 
-  return <ClientPart code={code} initialPair={initialPair} initialJackpot= {currentJackpot} numPairs={numPairs} initialQueue={initialQueue} initialJackpots={initialJackpots} />
+  return <ClientPart 
+    code={code}
+    initialPair={currentPair}
+    initialJackpot= {currentJackpot}
+    numPairs={numPairs}
+    initialQueue={initialQueue}
+    initialJackpots={initialJackpots}
+  />
 }
