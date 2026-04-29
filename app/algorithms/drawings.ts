@@ -129,6 +129,11 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
     })
   ])
   
+  // Adding the drawned pair to the active queue //
+  const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
+  const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
+  activeQueue.push({ pair: chosens, jackpot: jackpot })
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue))
 
   return [chosens, jackpot]
 }

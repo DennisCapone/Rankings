@@ -18,12 +18,11 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const pendingQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
   let pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
     ? (typeof pendingQueueStr === 'string' ? JSON.parse(pendingQueueStr) : pendingQueueStr) : []
-
   const currentPairStr = await fast_db.get<string>(`current_pair:${code}:${sessionId}`)
   let currentPair: Pair | null = currentPairStr 
     ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
-  const currentJackpotStr = await fast_db.get<boolean>(`current_jackpot:${code}:${sessionId}`)
-  let currentJackpot: boolean | null = (currentJackpotStr || false ) ?? null
+  const currentJackpotStr = await fast_db.get<string>(`current_jackpot:${code}:${sessionId}`)
+  let currentJackpot: boolean = currentJackpotStr === 'true'
 
   // 
   const drawnPairsRaw = await fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || []

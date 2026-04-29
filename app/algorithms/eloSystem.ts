@@ -42,7 +42,10 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   await pipeline.exec()
   
   // Move the current pair and the queue //
-  await fast_db.del(`current_pair:${code}:${sessionId}`)
+  await Promise.all([
+    fast_db.del(`current_pair:${code}:${sessionId}`),
+    fast_db.del(`current_jackpot:${code}:${sessionId}`)
+  ])
   const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
   const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
   if (activeQueue.length > 0) {
