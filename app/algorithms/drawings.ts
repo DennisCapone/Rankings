@@ -2,6 +2,7 @@
 import { fast_db } from '@/lib/fast_db'
 import { syncDBtoRedis } from '@/lib/sync'
 import { randomUUID } from 'crypto'
+import { cookies } from 'next/headers'
 
 // Define the interfaces for the items and pairs //
 export interface Item {
@@ -19,8 +20,12 @@ export interface Pair {
 
 
 export async function drawing(code: string): Promise<[Pair, boolean] | null> {
+  // Get the sessionId //
+  const cookieStore = await cookies()
+  let sessionId = cookieStore.get('session')?.value
+  
   // Defining the probability to get a jackpot //
-  const lastJackpot = await fast_db.hget<number>(`ranking:${code}`, 'lastJackpot')
+  const lastJackpot = await fast_db.hget<number>(`ranking:${code}:${sessionId}`, 'lastJackpot')
   let probability = 0
   switch (lastJackpot) {
     case 4: probability = 15; break
@@ -34,7 +39,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   const jackpot = Math.random() * 100 <= probability
 
   // Setting the last jackpot //
-  fast_db.hset(`ranking:${code}`, {
+  fast_db.hset(`ranking:${code}:${sessionId}`, {
     lastJackpot: (jackpot) ? '0' : (Number(lastJackpot) + 1).toString()
   })
 
@@ -44,7 +49,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
 
   // Catching all the items of the ranking and their points from Redis //
   const [ drawnPairsRaw, rawRanking ] = await Promise.all([
-    fast_db.smembers<string[]>(`drawn_pairs:${code}`) || [],
+    fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || [],
     fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   ])
   if (!rawRanking || rawRanking.length === 0) return null
@@ -112,7 +117,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
 
   // Adding the drawned pair to the already drawneds //
   await Promise.all([
-    fast_db.sadd(`drawn_pairs:${code}`, chosens.pairId),
+    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, chosens.pairId),
     fast_db.hset(`token:${token}`, {
       idA: chosens.p1.id,
       idB: chosens.p2.id

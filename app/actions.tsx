@@ -1,5 +1,7 @@
 'use server'
 import { db } from '@/lib/db'
+import { cookies } from 'next/headers'
+import { randomUUID } from 'crypto'
 
 // Function to check if a ranking code exists in the database //
 export async function checkCode(code: string) {
@@ -39,4 +41,14 @@ export async function addRanking(items: string[], name: string) {
   })
   
   return code
+}
+
+
+// Function to generate a new session //
+export async function newSession() {
+  const sessionId = randomUUID();
+  (await cookies()).set('session', sessionId, {
+    httpOnly: true,
+  })
+  return sessionId
 }
