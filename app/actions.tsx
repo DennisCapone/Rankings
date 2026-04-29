@@ -1,7 +1,5 @@
 'use server'
 import { db } from '@/lib/db'
-import { cookies } from 'next/headers'
-import { randomUUID } from 'crypto'
 
 // Function to check if a ranking code exists in the database //
 export async function checkCode(code: string) {
@@ -12,7 +10,6 @@ export async function checkCode(code: string) {
 
 // Function to add a new ranking to the database with the provided items and name //
 export async function addRanking(items: string[], name: string) {
-
   // Generate a unique 8-character code for the ranking //
   let code = ''
   let check = true
