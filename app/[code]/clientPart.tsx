@@ -5,11 +5,11 @@ import { drawing, Pair } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
 import { useState, useRef } from 'react'
 
-export default function ClientPart({ code, initialPair, initialQueue, initialJackpots, numPairs }: { code: string, initialPair: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], numPairs: number}) {
+export default function ClientPart({ code, initialPair, initialQueue, initialJackpots, initialJackpot, numPairs }: { code: string, initialPair: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], initialJackpot: boolean, numPairs: number}) {
   // Defining the states for the current and queued pairs //
   const [ playedPairs, setPlayedPairs ] = useState<number>(0)
   const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPair)
-  const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(false)
+  const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(initialJackpot)
   const [ pairs, setPairs ] = useState<(Pair | null)[]>(initialQueue)
   const [ jackpots, setJackpots ] = useState<boolean[]>(initialJackpots)
 

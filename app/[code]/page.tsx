@@ -22,15 +22,13 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const currentPairStr = await fast_db.get<string>(`current_pair:${code}:${sessionId}`)
   let currentPair: Pair | null = currentPairStr 
     ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
+  const currentJackpotStr = await fast_db.get<string>(`current_jackpot:${code}:${sessionId}`)
+  let currentJackpot: boolean = currentJackpotStr === 'true'
 
   // Calling the initial queue (9 + 1 elements) to prefetch it in background //
   const needed = 10 - pendingQueue.length
   const initialQueue: Pair[] = pendingQueue.map(q => q.pair)
   const initialJackpots: boolean[] = pendingQueue.map(q => q.jackpot)
-  if (!currentPair && initialQueue.length > 0) {
-    currentPair = initialQueue.shift() ?? null;
-    initialJackpots.shift();
-  }
   for (let i = 0; i < needed; i++) {
     const result = await drawing(code)
     if (!result) break
@@ -39,8 +37,8 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     initialJackpots.push(jackpot)
   }
 
-  const initialPair = initialQueue[0] ?? null
-  if (initialQueue.length > 0) {
+  const initialPair = currentPair ?? initialQueue[0] ?? null
+  if (initialQueue.length > 0 && !currentPair) {
     initialQueue.shift()
     initialJackpots.shift()
   }
@@ -48,16 +46,17 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   // Save all the pairs in Redis // 
   if (currentPair) {
     await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair))
+    await fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(currentJackpot))
   }
   const queueToSave = initialQueue.map((pair, i) => ({
     pair: pair,
-    jackpot: false
-  }));
-  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave));
+    jackpot: initialJackpots[i]
+  }))
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
 
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
   const numPairs = ((itemsLength) * ((itemsLength-1)/2))
 
-  return <ClientPart code={code} initialPair={initialPair} numPairs={numPairs} initialQueue={initialQueue} initialJackpots={initialJackpots} />
+  return <ClientPart code={code} initialPair={initialPair} initialJackpot= {currentJackpot} numPairs={numPairs} initialQueue={initialQueue} initialJackpots={initialJackpots} />
 }
