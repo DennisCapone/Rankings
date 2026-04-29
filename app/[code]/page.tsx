@@ -15,7 +15,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const sessionId = cookieStore.get('session')?.value
 
   // Looking for a pending queue //
-  const pendingQueueStr = await fast_db.get<string>(`pending_queue:${code}:${sessionId}`)
+  const pendingQueueStr = await fast_db.get<string[]>(`active_queue:${code}:${sessionId}`)
   const pendingQueue: { pair: Pair, jackpot: boolean }[] = pendingQueueStr 
     ? (typeof pendingQueueStr === 'string' ? JSON.parse(pendingQueueStr) : pendingQueueStr) : []
 
@@ -35,8 +35,15 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   if (initialQueue.length > 0) {
     initialQueue.shift()
     initialJackpots.shift()
-  } 
-  
+  }
+
+  // Save the first pair in Redis
+  const queueToSave = initialQueue.map((pair, i) => ({
+    pair: pair,
+    jackpot: false
+  }));
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave));
+
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
   const numPairs = ((itemsLength) * ((itemsLength-1)/2))
