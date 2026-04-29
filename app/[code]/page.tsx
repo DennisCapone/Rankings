@@ -22,8 +22,8 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const currentPairStr = await fast_db.get<string>(`current_pair:${code}:${sessionId}`)
   const currentPair: Pair | null = currentPairStr 
     ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
-  const currentJackpotStr = await fast_db.get<string>(`current_jackpot:${code}:${sessionId}`)
-  const currentJackpot: boolean = currentJackpotStr === 'true'
+  const currentJackpotStr = await fast_db.get<boolean>(`current_jackpot:${code}:${sessionId}`)
+  const currentJackpot: boolean | null = currentJackpotStr ?? null
 
   // Calling the initial queue (9 + 1 elements) to prefetch it in background //
   const needed = 10 - pendingQueue.length
