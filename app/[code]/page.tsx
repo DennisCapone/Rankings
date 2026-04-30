@@ -46,9 +46,22 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   }
 
   // If there isn't a current pair, take it from the queue //
+  let isNewPair = false
   if (!currentPair) {
     currentPair = initialQueue.shift() ?? null
     currentJackpot = initialJackpots.shift() ?? false
+    isNewPair = true
+  }
+  if (isNewPair) {
+    if (currentPair) {
+      await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair), {ex: 86400})
+      await fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(currentJackpot), {ex: 86400})
+    }
+    const queueToSave = initialQueue.map((pair, i) => ({
+      pair: pair,
+      jackpot: initialJackpots[i]
+    }))
+    await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave), {ex: 86400})
   }
 
   // Save all the pairs in Redis // 
