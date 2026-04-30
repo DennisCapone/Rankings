@@ -52,6 +52,8 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     currentJackpot = initialJackpots.shift() ?? false
     isNewPair = true
   }
+
+  // Save the pairs in Redis // 
   if (isNewPair) {
     if (currentPair) {
       await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair), {ex: 86400})
@@ -64,11 +66,6 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave), {ex: 86400})
   }
 
-  // Save all the pairs in Redis // 
-  if (currentPair) {
-    await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair), {ex: 86400})
-    await fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(currentJackpot), {ex: 86400})
-  }
   const queueToSave = initialQueue.map((pair, i) => ({
     pair: pair,
     jackpot: initialJackpots[i]
