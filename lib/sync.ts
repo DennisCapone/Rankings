@@ -44,32 +44,38 @@ export async function syncRedisToDB(code: string) {
     //  Check if the ranking exists in Redis before attempting to sync //
     const exists = await fast_db.exists(`fast_ranking:${code}`)
     if (!exists) {
-      console.log(`Nessun dato in Redis per il ranking: ${code}`)
+      console.log(`No data for: ${code}`)
       return
     }
 
     // Take all the items ids from Redis //
-    const itemIds = await fast_db.zrange(`fast_ranking:${code}`, 0, -1)
-    if (itemIds.length === 0) return null
+    const zsetArray = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
+    if (zsetArray.length === 0) return null
 
     // Updating points //
     const updateQueries: Prisma.Prisma__ItemClient<ItemPrisma>[] = []
-    itemIds.map(async (id) => {
-      // Takes the points of the item from Redis //
-      const points = await fast_db.zscore(`fast_ranking:${code}`, id as string)
+    for (let i = 0; i < zsetArray.length; i += 2) {
+      const id = zsetArray[i]
+      const points = Number(zsetArray[i + 1])
 
-      // Update the points of the item in the database //
-      if (points !== null) {
-        updateQueries.push(
-          db.item.update({
-            where: { id: BigInt(id as string) },
-            data: { points: Number(points) },
-          })
-        )
-      }
-    })
+      updateQueries.push(
+        db.item.update({
+          where: { id: BigInt(id) },
+          data: { points },
+        })
+      )
+    }
     await db.$transaction(updateQueries)
   } catch (error) {
-    console.error('Errore durante la sincronizzazione da Redis a DB:', error)
+    console.error('sync error: ', error)
+  }
+}
+
+export async function syncAllRedisToDb() {
+  const keys = await fast_db.keys('fast_ranking:*')
+
+  for (const key of keys) {
+    const code = key.replace('fast_ranking:', '')
+    await syncRedisToDB(code)
   }
 }
