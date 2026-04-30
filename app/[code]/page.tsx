@@ -8,7 +8,7 @@ import { notFound } from 'next/navigation'
 export default async function Play({ params }: { params: Promise<{ code: string }> }) {
   // Call all the client part from another component to be able to prefetche data and avoid loading times //
   const { code } = await params
-  if (code.length !== 8) notFound()
+  if (code.length !== 8 && code !== 'PONTECCHIO') notFound()
 
   // Check if the user have a session id and, in case, create it //
   const cookieStore = await cookies()
@@ -22,7 +22,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   let currentPair: Pair | null = currentPairStr 
     ? (typeof currentPairStr === 'string' ? JSON.parse(currentPairStr) : currentPairStr) : null
   const currentJackpotStr = await fast_db.get<string>(`current_jackpot:${code}:${sessionId}`)
-  let currentJackpot: boolean = currentJackpotStr === 'true'
+  let currentJackpot: boolean = String(currentJackpotStr) === 'true'
 
   // 
   const drawnPairsRaw = await fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || []
@@ -62,7 +62,7 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   }))
   await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave), {ex: 86400})
 
-  // //
+  // Setting the pending queue //
   const validPendingPairs: string[] = []
   if (currentPair) validPendingPairs.push(currentPair.pairId)
   initialQueue.forEach(q => validPendingPairs.push(q.pairId))

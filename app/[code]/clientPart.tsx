@@ -45,10 +45,6 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
     })
   }
 
-  useEffect(() => {
-    router.refresh();
-  }, [router]);
-
 
   return (
     <>
@@ -60,10 +56,10 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
         <button onClick={() => { handleVote(code, true), setPlayedPairs(playedPairs+1) }}>
-          <Button textcolor='' color='' bcolor='' text={currentPair?.p1.name || ''} />
+          <Button textcolor='' color='' bcolor='' text={currentPair?.p1.name || 'Loading...'} />
         </button>
         <button onClick={() => { handleVote(code, false), setPlayedPairs(playedPairs+1) }}>
-          <Button text={currentPair?.p2.name || ''} textcolor='' bcolor='' color='' />
+          <Button text={currentPair?.p2.name || 'Loading...'} textcolor='' bcolor='' color='' />
         </button>
       </div>
 

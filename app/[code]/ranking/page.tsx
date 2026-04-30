@@ -60,7 +60,7 @@ export default async function Ranking({ params }: { params: Promise<{ code: stri
             <div className='border-black border-solid border-3 h-10 w-10 flex justify-center'>{index + 1}</div>
           </div>))
       }
-      <Link href={`/${code}`}><div className='flex justify-center mt-70'><Button textcolor='' bcolor='' text='Torna a giocare' color='bg-blue-300' /></div></Link>
+      <a href={`/${code}`}><div className='flex justify-center mt-70'><Button textcolor='' bcolor='' text='Torna a giocare' color='bg-blue-300' /></div></a>
       <Link href='/'><div className='flex justify-center mt-2'><Button textcolor='' bcolor='' text='Torna indietro' color='bg-red-300' /></div></Link>
     </>
   )

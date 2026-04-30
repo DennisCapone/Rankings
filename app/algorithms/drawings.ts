@@ -126,7 +126,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
       idA: chosens.p1.id,
       idB: chosens.p2.id,
       pairId: chosens.pairId
-    }).expire(`token:${token}`, 600).exec()
+    }).expire(`token:${token}`, 86400).exec()
   ])
   
   // Adding the drawned pair to the active queue //

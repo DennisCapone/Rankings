@@ -8,7 +8,7 @@ export default function Play() {
 
   // Manage the change of the user input //
   const handleChange = (value: string) => {
-    if (value.length <= 8) {
+    if (value.length <= 8 && value !== 'PONTECCH' && value !== 'PONTECCHI') {
       codeSet(value.toUpperCase()) 
     }
   }
