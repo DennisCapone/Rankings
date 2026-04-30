@@ -39,9 +39,9 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   const jackpot = Math.random() * 100 <= probability
 
   // Setting the last jackpot //
-  fast_db.hset(`ranking:${code}:${sessionId}`, {
+  fast_db.pipeline().hset(`ranking:${code}:${sessionId}`, {
     lastJackpot: (jackpot) ? '0' : (Number(lastJackpot) + 1).toString()
-  })
+  }).expire(`ranking:${code}:${sessionId}`, 86400).exec()
 
   // Check if the ranking exists in Redis, if not search it in Supabase //
   const exist = await fast_db.exists(`fast_ranking:${code}`)
@@ -121,19 +121,19 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Adding the drawned pair to the pending queue //
   pendingPairs?.push(chosens.pairId)
   await Promise.all([
-    fast_db.set(`pending_queue:${code}:${sessionId}`, pendingPairs),
-    fast_db.hset(`token:${token}`, {
+    fast_db.set(`pending_queue:${code}:${sessionId}`, pendingPairs, {ex:86400}),
+    fast_db.pipeline().hset(`token:${token}`, {
       idA: chosens.p1.id,
       idB: chosens.p2.id,
       pairId: chosens.pairId
-    })
+    }).expire(`token:${token}`, 600).exec()
   ])
   
   // Adding the drawned pair to the active queue //
   const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
   const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
   activeQueue.push({ pair: chosens, jackpot: jackpot })
-  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue))
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue), {ex:86400})
 
   return [chosens, jackpot]
 }

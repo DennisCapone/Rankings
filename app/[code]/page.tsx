@@ -53,20 +53,20 @@ export default async function Play({ params }: { params: Promise<{ code: string 
 
   // Save all the pairs in Redis // 
   if (currentPair) {
-    await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair))
-    await fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(currentJackpot))
+    await fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(currentPair), {ex: 86400})
+    await fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(currentJackpot), {ex: 86400})
   }
   const queueToSave = initialQueue.map((pair, i) => ({
     pair: pair,
     jackpot: initialJackpots[i]
   }))
-  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave))
+  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(queueToSave), {ex: 86400})
 
   // //
   const validPendingPairs: string[] = []
   if (currentPair) validPendingPairs.push(currentPair.pairId)
   initialQueue.forEach(q => validPendingPairs.push(q.pairId))
-  await fast_db.set(`pending_queue:${code}:${sessionId}`, validPendingPairs)
+  await fast_db.set(`pending_queue:${code}:${sessionId}`, validPendingPairs, {ex: 86400})
 
   // Defining the number of the pairs //
   const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)

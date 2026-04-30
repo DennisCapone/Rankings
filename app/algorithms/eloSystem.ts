@@ -39,6 +39,7 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   const pipeline = fast_db.pipeline()
   pipeline.zincrby(`fast_ranking:${code}`, aInc, idA.toString())
   pipeline.zincrby(`fast_ranking:${code}`, -aInc, idB.toString())
+  pipeline.expire(`fast_ranking:${code}`, 3600)
   await pipeline.exec()
   
   // Move the current pair and the queue //
@@ -52,16 +53,16 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
     const nextObj = activeQueue.shift()
     if (nextObj) {
       await Promise.all([
-        fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(nextObj.pair)),
-        fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(nextObj.jackpot)),
-        fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue))
+        fast_db.set(`current_pair:${code}:${sessionId}`, JSON.stringify(nextObj.pair), {ex:86400}),
+        fast_db.set(`current_jackpot:${code}:${sessionId}`, JSON.stringify(nextObj.jackpot), {ex:86400}),
+        fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue), {ex:86400})
       ])
     }
   }
 
   // Putting the pair in the drawned pairs and remove that from the pendings pair //
   await Promise.all ([
-    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId),
-    fast_db.set(`pending_queue:${code}:${sessionId}`, updatedPendingPairs)
+    fast_db.sadd(`drawn_pairs:${code}:${sessionId}`, pair.pairId, {ex:86400}),
+    fast_db.set(`pending_queue:${code}:${sessionId}`, updatedPendingPairs, {ex:86400})
   ]) 
 }
