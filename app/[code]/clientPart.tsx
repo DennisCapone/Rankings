@@ -3,9 +3,11 @@ import Button from '@/components/Button'
 import Link from 'next/link'
 import { drawing, Pair } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function ClientPart({ code, initialPair, initialQueue, initialJackpots, initialJackpot, numPairs }: { code: string, initialPair: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], initialJackpot: boolean, numPairs: number}) {
+  const router = useRouter();
   // Defining the states for the current and queued pairs //
   const [ playedPairs, setPlayedPairs ] = useState<number>(0)
   const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPair)
@@ -42,6 +44,10 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
       }
     })
   }
+
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
 
 
   return (
