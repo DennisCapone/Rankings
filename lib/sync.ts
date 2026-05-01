@@ -21,11 +21,12 @@ export async function syncDBtoRedis(code: string) {
         code: ranking.code,
         name: ranking.name,
         chosens: {
-          p1: { id: 0, name: '', score: 0 },
-          p2: { id: 0, name: '', score: 0 },
+          i1: { id: 0, name: '', score: 0 },
+          i2: { id: 0, name: '', score: 0 },
           diff: 0,
           pairId: '',
-          token: ''
+          token: '',
+          jackpot: false
         }
       }
       const items: Item[] = ranking.items.map((item) => ({
