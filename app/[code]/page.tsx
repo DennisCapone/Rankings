@@ -19,8 +19,9 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   }
 
   // Setting the pending queue //
+  const newPendingsIds = await fast_db.lrange(`pending_queue:${code}:${sessionId}`, 0, -1)
   const pendingsQueue: Pair[] = await Promise.all(
-    pendingsIds.map(async (pairId): Promise<Pair> => {
+    newPendingsIds.map(async (pairId): Promise<Pair> => {
       const data = await fast_db.hgetall(`pairs:${pairId}`)
       if (!data) {
         throw new Error(`No data: ${pairId}`);
