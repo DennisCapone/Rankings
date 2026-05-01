@@ -11,18 +11,23 @@ export interface Item {
   name: string
 }
 export interface Pair {
-  p1: Item,
-  p2: Item, 
+  i1: Item,
+  i2: Item, 
   diff: number,
-  pairId: string
-  token: string
+  pairId: string,
+  token: string,
+  jackpot: boolean
 }
 
 
-export async function drawing(code: string): Promise<[Pair, boolean] | null> {
+export async function drawing(code: string) {
   // Get the sessionId //
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('session')?.value
+
+  // Check if the ranking exists in Redis, if not search it in Supabase //
+  const exist = await fast_db.exists(`fast_ranking:${code}`)
+  !exist && await syncDBtoRedis(code)
   
   // Defining the probability to get a jackpot //
   const lastJackpot = await fast_db.hget<number>(`ranking:${code}:${sessionId}`, 'lastJackpot')
@@ -43,14 +48,10 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
     lastJackpot: (jackpot) ? '0' : (Number(lastJackpot) + 1).toString()
   }).expire(`ranking:${code}:${sessionId}`, 86400).exec()
 
-  // Check if the ranking exists in Redis, if not search it in Supabase //
-  const exist = await fast_db.exists(`fast_ranking:${code}`)
-  !exist && await syncDBtoRedis(code)
-
   // Catching all the items of the ranking and their points from Redis //
-  const [ drawnPairsRaw, pendingPairs , rawRanking ] = await Promise.all([
-    fast_db.smembers<string[]>(`drawn_pairs:${code}:${sessionId}`) || [],
-    fast_db.get<string[]>(`pending_queue:${code}:${sessionId}`) || [],
+  const [ drawnedPairsRaw, pendingPairs , rawRanking ] = await Promise.all([
+    fast_db.smembers<string[]>(`drawned_pairs:${code}:${sessionId}`) || [],
+    fast_db.lrange<string>(`pending_queue:${code}:${sessionId}`, 0, -1) || [],
     fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true })
   ])
   if (!rawRanking || rawRanking.length === 0) return null
@@ -64,31 +65,32 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
     })
   }
 
-  // Create the players array with the details of each player //
-  const players: Item[] = []
-  for (let i = 0; i < ranking.length; i++) {
-    players.push({
-      id: parseInt(ranking[i].member),
-      score: ranking[i].score,
+  // Create the items array with the details of each player //
+  const items: Item[] = []
+  ranking.forEach((item) => {
+    items.push({
+      id: parseInt(item.member),
+      score: item.score,
       name: ''
     })
-  }
-  if (players.length < 2) return null
+  })
+  if (items.length < 2) return null
   
-  // Create all the possible pairs of players and filter out the already drawn ones //
-  const drawned = new Set(drawnPairsRaw)
+  // Create all the possible pairs of items and filter out the already drawned ones //
+  const drawned = new Set(drawnedPairsRaw)
   const pairs: Pair[] = []
   const token = randomUUID()
-  for (let i = 0; i < players.length; i++) {
-    for (let j = i + 1; j < players.length; j++) {
-      const pairId = (players[i].id < players[j].id) ? `${players[i].id}-${players[j].id}` : `${players[j].id}-${players[i].id}`
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const pairId = (items[i].id < items[j].id) ? `${items[i].id}-${items[j].id}` : `${items[j].id}-${items[i].id}`
       if ((!drawned.has(pairId)) && (!pendingPairs?.includes(pairId))) {
         pairs.push({
-          p1: players[i],
-          p2: players[j],
-          diff: Math.abs(players[i].score - players[j].score), 
+          i1: items[i],
+          i2: items[j],
+          diff: Math.abs(items[i].score - items[j].score), 
           pairId: pairId,
-          token: token
+          token: token,
+          jackpot: false
         })
       }
     }
@@ -97,7 +99,7 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   
   // Exclude the jackpots (10%) or the normals pair from the drawing //
   if (pairs.length > 1) {
-    const jackpotPairs = Math.ceil(pairs.length * 0.10)
+    const jackpotPairs = Math.ceil(pairs.length * 0.1)
     pairs.sort((a, b) => a.diff - b.diff)
     jackpot ? pairs.splice(jackpotPairs, pairs.length - jackpotPairs) : pairs.splice(0, jackpotPairs)
   }
@@ -105,35 +107,46 @@ export async function drawing(code: string): Promise<[Pair, boolean] | null> {
   // Randomly select a pair from the remaining and put it in a random order //
   const chosens = pairs[Math.floor(Math.random() * pairs.length)]
   if (Math.random() > 0.5) {
-    const temp = chosens.p1
-    chosens.p1 = chosens.p2
-    chosens.p2 = temp
+    const temp = chosens.i1
+    chosens.i1 = chosens.i2
+    chosens.i2 = temp
   }
 
-  // Fetch the names of the chosen players //
+  // Fetch the names of the chosens items //
   const [name1, name2] = await Promise.all([
-    fast_db.hget<string>(`item:${chosens.p1.id.toString()}`, 'name'),
-    fast_db.hget<string>(`item:${chosens.p2.id.toString()}`, 'name')
+    fast_db.hget<string>(`item:${chosens.i1.id.toString()}`, 'name'),
+    fast_db.hget<string>(`item:${chosens.i2.id.toString()}`, 'name')
   ])
-  chosens.p1.name = name1 || 'Unknown'
-  chosens.p2.name = name2 || 'Unknown'
+  chosens.i1.name = name1 || 'Unknown'
+  chosens.i2.name = name2 || 'Unknown'
+  chosens.jackpot = jackpot
 
-  // Adding the drawned pair to the pending queue //
-  pendingPairs?.push(chosens.pairId)
   await Promise.all([
-    fast_db.set(`pending_queue:${code}:${sessionId}`, pendingPairs, {ex:86400}),
+    // Adding the drawned pair to the pending queue //
+    fast_db.pipeline().rpush(`pending_queue:${code}:${sessionId}`, chosens.pairId),
+    fast_db.expire(`pending_queue:${code}:${sessionId}`, 86400),
+
+    // Adding the pair's details to the hash //
+    fast_db.pipeline().hset(`pairs:${chosens.pairId}`, {
+      i1_id: chosens.i1.id,
+      i1_name: chosens.i1.name,
+      i1_score: chosens.i1.score,
+      i2_id: chosens.i2.id,
+      i2_name: chosens.i2.name,
+      i2_score: chosens.i2.score,
+      diff: chosens.diff,
+      pairId: chosens.pairId,
+      token: chosens.token,
+      jackpot: chosens.jackpot
+    }).expire(`pairs:${code}: ${sessionId}`, 86400).exec(),
+
+    // Adding the token to the token's hash //
     fast_db.pipeline().hset(`token:${token}`, {
-      idA: chosens.p1.id,
-      idB: chosens.p2.id,
+      idA: chosens.i1.id,
+      idB: chosens.i2.id,
       pairId: chosens.pairId
     }).expire(`token:${token}`, 86400).exec()
   ])
-  
-  // Adding the drawned pair to the active queue //
-  const activeQueueStr = await fast_db.get<string>(`active_queue:${code}:${sessionId}`)
-  const activeQueue: { pair: Pair, jackpot: boolean }[] = activeQueueStr ? (typeof activeQueueStr === 'string' ? JSON.parse(activeQueueStr) : activeQueueStr) : [];
-  activeQueue.push({ pair: chosens, jackpot: jackpot })
-  await fast_db.set(`active_queue:${code}:${sessionId}`, JSON.stringify(activeQueue), {ex:86400})
 
-  return [chosens, jackpot]
+  return chosens as Pair
 }

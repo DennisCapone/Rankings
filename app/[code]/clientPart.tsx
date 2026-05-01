@@ -3,42 +3,37 @@ import Button from '@/components/Button'
 import Link from 'next/link'
 import { drawing, Pair } from '@/app/algorithms/drawings'
 import { eloSystem } from '@/app/algorithms/eloSystem'
-import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useRef } from 'react'
 
-export default function ClientPart({ code, initialPair, initialQueue, initialJackpots, initialJackpot, numPairs }: { code: string, initialPair: Pair | null, initialQueue: Pair[], initialJackpots: boolean[], initialJackpot: boolean, numPairs: number}) {
-  const router = useRouter();
+export default function ClientPart({ code, startingQueue, numPairs }: { code: string, startingQueue: Pair[], numPairs: number}) {
   // Defining the states for the current and queued pairs //
-  const [ playedPairs, setPlayedPairs ] = useState<number>(0)
-  const [ currentPair, setCurrentPair ] = useState<Pair | null>(initialPair)
-  const [ currentJackpot, setCurrentJackpot ] = useState<boolean | null>(initialJackpot)
-  const [ pairs, setPairs ] = useState<(Pair | null)[]>(initialQueue)
-  const [ jackpots, setJackpots ] = useState<boolean[]>(initialJackpots)
+  const [ queue, setQueue ] = useState<Pair[]>(startingQueue)
+  const [ currentPair, setCurrentPair ] = useState<Pair>(queue[0])
+  const [ played, setPlayed ] = useState(0)
 
   // Function to fill the queue with new pairs  //
   const fillQueue = async () => {
-    try {
-      const result = await drawing(code)
-      if (result?.[0]) {
-        const [ pair, isJackpot ] = result
-        setPairs(prev => [...prev, pair])
-        setJackpots(prev => [...prev, isJackpot])
-      }
-    }
-    catch (error) { console.error('fillQueue error: ' + error) }
+    const newPair = await drawing(code) as Pair
+    const newQueue: Pair[] = queue
+    newQueue.push(newPair)
   }
 
-  // Function to handle the vote and update the current pair //
   const serverQueue = useRef<Promise<void>>(Promise.resolve())
   const handleVote = async (code: string, vote: boolean) => {
-    setCurrentPair(pairs[0])
-    setCurrentJackpot(jackpots[0])
-    setPairs(prev => prev.slice(1))
-    setJackpots(prev => prev.slice(1))
+    // Give a new question to the user //
+    const newQueue = queue
+    newQueue.shift()
+    if (!newQueue) return null
+    setQueue(newQueue)
+    setCurrentPair(queue[0])
+
+    // Call some function in background //
     serverQueue.current = serverQueue.current.then(async () => {
       try {
-        await eloSystem(code, currentPair?.token || '', vote)
-        await fillQueue()
+        Promise.all([
+          eloSystem(code, currentPair?.token || '', vote),
+          fillQueue()
+        ])
       } catch (error) {
         console.error("Syncronization error: ", error)
       }
@@ -48,18 +43,18 @@ export default function ClientPart({ code, initialPair, initialQueue, initialJac
 
   return (
     <>
-      {currentJackpot && <div className='fixed inset-0 border-40 border-orange-500 pointer-events-none z-[9999]'></div>}
+      {currentPair.jackpot && <div className='fixed inset-0 border-40 border-orange-500 pointer-events-none z-[9999]'></div>}
 
       <Link href={`/${code}/ranking`}><div className='mt-20 ml-10'><Button textcolor='' bcolor='' text='classifica' color='bg-green-500' /></div></Link>
 
-      {<div className='mt-20 ml-[200px]'> <h1> {playedPairs}/{numPairs} </h1> </div>}
+      {<div className='mt-20 ml-[200px]'> <h1> {played}/{numPairs} </h1> </div>}
 
       <div className='flex justify-center mt-5 gap-10 mt-50'>
-        <button onClick={() => { handleVote(code, true), setPlayedPairs(playedPairs+1) }}>
-          <Button textcolor='' color='' bcolor='' text={currentPair?.p1.name || 'Loading...'} />
+        <button onClick={() => { handleVote(code, true), setPlayed(played+1) }}>
+          <Button textcolor='' color='' bcolor='' text={currentPair?.i1.name || 'Loading...'} />
         </button>
-        <button onClick={() => { handleVote(code, false), setPlayedPairs(playedPairs+1) }}>
-          <Button text={currentPair?.p2.name || 'Loading...'} textcolor='' bcolor='' color='' />
+        <button onClick={() => { handleVote(code, false), setPlayed(played+1) }}>
+          <Button text={currentPair?.i2.name || 'Loading...'} textcolor='' bcolor='' color='' />
         </button>
       </div>
 
