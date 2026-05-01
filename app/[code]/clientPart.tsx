@@ -40,6 +40,13 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
     })
   }
 
+  if (!currentPair) {
+    return (
+      <div className='flex justify-center mt-50'>
+        <h1>Caricamento o coppie terminate...</h1>
+      </div>
+    )
+  }
 
   return (
     <>
