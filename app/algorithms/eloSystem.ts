@@ -41,6 +41,6 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   // Putting the pair in the drawned pairs and remove that from the pendings pair //
   await Promise.all ([
     fast_db.sadd(`drawned_pairs:${code}:${sessionId}`, pair.pairId, {ex:86400}),
-    fast_db.lrem(`pending_queue_${code}_${sessionId}`, 0, pair.pairId)
+    fast_db.lrem(`pending_queue:${code}:${sessionId}`, 0, pair.pairId)
   ]) 
 }

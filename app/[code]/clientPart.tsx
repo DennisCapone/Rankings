@@ -8,7 +8,7 @@ import { useState, useRef } from 'react'
 export default function ClientPart({ code, startingQueue, numPairs }: { code: string, startingQueue: Pair[], numPairs: number}) {
   // Defining the states for the current and queued pairs //
   const [ queue, setQueue ] = useState<Pair[]>(startingQueue)
-  const [ currentPair, setCurrentPair ] = useState<Pair>(queue[0])
+  const [ currentPair, setCurrentPair ] = useState<Pair>(startingQueue[0])
   const [ played, setPlayed ] = useState(0)
 
   // Function to fill the queue with new pairs  //

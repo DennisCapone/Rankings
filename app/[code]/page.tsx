@@ -40,8 +40,8 @@ export default async function Play({ params }: { params: Promise<{ code: string 
         diff: Number(data.diff),
         pairId: String(data.pairId),
         token: String(data.token),
-        jackpot: data.jackpot !== 'f'
-        }
+        jackpot: Boolean(data.jackpot)
+      }
     })
   )
 
