@@ -3,6 +3,7 @@ import { fast_db } from '@/lib/fast_db'
 import { syncDBtoRedis } from '@/lib/sync'
 import { randomUUID } from 'crypto'
 import { cookies } from 'next/headers'
+import { pipeline } from 'stream'
 
 // Define the interfaces for the items and pairs //
 export interface Item {
@@ -121,32 +122,34 @@ export async function drawing(code: string) {
   chosens.i2.name = name2 || 'Unknown'
   chosens.jackpot = jackpot
 
-  await Promise.all([
-    // Adding the drawned pair to the pending queue //
-    fast_db.pipeline().rpush(`pending_queue:${code}:${sessionId}`, chosens.pairId),
-    fast_db.expire(`pending_queue:${code}:${sessionId}`, 86400),
+  // Adding the drawned pair to the pending queue //
+  const pipeline = fast_db.pipeline()
 
-    // Adding the pair's details to the hash //
-    fast_db.pipeline().hset(`pairs:${chosens.pairId}`, {
-      i1_id: chosens.i1.id,
-      i1_name: chosens.i1.name,
-      i1_score: chosens.i1.score,
-      i2_id: chosens.i2.id,
-      i2_name: chosens.i2.name,
-      i2_score: chosens.i2.score,
-      diff: chosens.diff,
-      pairId: chosens.pairId,
-      token: chosens.token,
-      jackpot: chosens.jackpot
-    }).expire(`pairs:${code}: ${sessionId}`, 86400).exec(),
+  pipeline.rpush(`pending_queue:${code}:${sessionId}`, chosens.pairId)
+  pipeline.expire(`pending_queue:${code}:${sessionId}`, 86400)
 
-    // Adding the token to the token's hash //
-    fast_db.pipeline().hset(`token:${token}`, {
-      idA: chosens.i1.id,
-      idB: chosens.i2.id,
-      pairId: chosens.pairId
-    }).expire(`token:${token}`, 86400).exec()
-  ])
+  // Adding the pair's details to the hash //
+  pipeline.hset(`pairs:${chosens.pairId}`, {
+    i1_id: chosens.i1.id,
+    i1_name: chosens.i1.name,
+    i1_score: chosens.i1.score,
+    i2_id: chosens.i2.id,
+    i2_name: chosens.i2.name,
+    i2_score: chosens.i2.score,
+    diff: chosens.diff,
+    pairId: chosens.pairId,
+    token: chosens.token,
+    jackpot: chosens.jackpot
+  }).expire(`pairs:${code}:${chosens.pairId}`, 86400)
+
+  // Adding the token to the token's hash //
+  pipeline.hset(`token:${token}`, {
+    idA: chosens.i1.id,
+    idB: chosens.i2.id,
+    pairId: chosens.pairId
+  }).expire(`token:${token}`, 86400)
+
+  await pipeline.exec()
 
   return chosens as Pair
 }

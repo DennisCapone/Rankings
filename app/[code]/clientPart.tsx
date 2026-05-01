@@ -14,16 +14,17 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
   // Function to fill the queue with new pairs  //
   const fillQueue = async () => {
     const newPair = await drawing(code) as Pair
-    const newQueue: Pair[] = queue
-    newQueue.push(newPair)
+    if (newPair) {
+      setQueue(prevQueue => [...prevQueue, newPair])
+    }
   }
 
   const serverQueue = useRef<Promise<void>>(Promise.resolve())
   const handleVote = async (code: string, vote: boolean) => {
     // Give a new question to the user //
-    const newQueue = queue
+    const newQueue = [...queue]
     newQueue.shift()
-    if (!newQueue) return null
+    if (newQueue.length === 0) return null
     setQueue(newQueue)
     setCurrentPair(queue[0])
 
