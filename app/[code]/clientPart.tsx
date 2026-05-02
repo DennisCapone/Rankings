@@ -29,24 +29,14 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
     setCurrentPair(newQueue[0])
 
     // Call some function in background //
+    eloSystem(code, token || '', vote)
     serverQueue.current = serverQueue.current.then(async () => {
       try {
-        Promise.all([
-          eloSystem(code, token || '', vote),
           fillQueue()
-        ])
       } catch (error) {
         console.error("Syncronization error: ", error)
       }
     })
-  }
-
-  if (!currentPair) {
-    return (
-      <div className='flex justify-center mt-50'>
-        <h1>Caricamento o coppie terminate...</h1>
-      </div>
-    )
   }
 
   return (
