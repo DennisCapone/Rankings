@@ -22,17 +22,17 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
   const serverQueue = useRef<Promise<void>>(Promise.resolve())
   const handleVote = async (code: string, vote: boolean) => {
     // Give a new question to the user //
+    const token = currentPair?.token
     const newQueue = [...queue]
     newQueue.shift()
-    if (newQueue.length === 0) return null
     setQueue(newQueue)
-    setCurrentPair(queue[0])
+    setCurrentPair(newQueue[0])
 
     // Call some function in background //
     serverQueue.current = serverQueue.current.then(async () => {
       try {
         Promise.all([
-          eloSystem(code, currentPair?.token || '', vote),
+          eloSystem(code, token || '', vote),
           fillQueue()
         ])
       } catch (error) {
