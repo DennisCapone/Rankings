@@ -3,7 +3,6 @@ import { fast_db } from '@/lib/fast_db'
 import { syncDBtoRedis } from '@/lib/sync'
 import { randomUUID } from 'crypto'
 import { cookies } from 'next/headers'
-import { pipeline } from 'stream'
 
 // Define the interfaces for the items and pairs //
 export interface Item {
@@ -21,7 +20,7 @@ export interface Pair {
 }
 
 
-export async function drawing(code: string) {
+export async function drawing(code: string, numPairs: number) {
   // Get the sessionId //
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('session')?.value
@@ -42,7 +41,9 @@ export async function drawing(code: string) {
   }
 
   // Decide if draw a jackpot based on probability //
-  const jackpot = Math.random() * 100 <= probability
+  const votes = await fast_db.hget<number>(`ranking:${code}`, 'votes')
+  if (!votes) return null
+  const jackpot = (Math.random() * 100 <= probability) && (votes >= numPairs * 0.33)
 
   // Setting the last jackpot //
   fast_db.pipeline().hset(`ranking:${code}:${sessionId}`, {

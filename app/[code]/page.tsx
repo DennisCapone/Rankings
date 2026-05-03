@@ -11,11 +11,15 @@ export default async function Play({ params }: { params: Promise<{ code: string 
   const cookieStore = await cookies()
   const sessionId = cookieStore.get('session')?.value || ''
 
+  // Defining the number of the pairs //
+  const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
+  const numPairs = ((itemsLength) * ((itemsLength-1)/2))
+
   // Calling the initial queue (10 elements) to prefetch it in background //
   const pendingsIds = await fast_db.lrange(`pending_queue:${code}:${sessionId}`, 0, -1)  
   const needed = 9 - pendingsIds.length
   for (let i = 0; i < needed; i++) {
-    await drawing(code)
+    await drawing(code, numPairs)
   }
 
   // Setting the pending queue //
@@ -45,9 +49,6 @@ export default async function Play({ params }: { params: Promise<{ code: string 
     })
   )
 
-  // Defining the number of the pairs //
-  const itemsLength = await fast_db.zcard(`fast_ranking:${code}`)
-  const numPairs = ((itemsLength) * ((itemsLength-1)/2))
 
   return <ClientPart 
     code = { code }

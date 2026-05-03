@@ -20,14 +20,7 @@ export async function syncDBtoRedis(code: string) {
       const rankingData: Ranking = {
         code: ranking.code,
         name: ranking.name,
-        chosens: {
-          i1: { id: 0, name: '', score: 0 },
-          i2: { id: 0, name: '', score: 0 },
-          diff: 0,
-          pairId: '',
-          token: '',
-          jackpot: false
-        }
+        votes: ranking.votes
       }
       const items: Item[] = ranking.items.map((item) => ({
         id: BigInt(item.id),
@@ -46,7 +39,7 @@ export async function syncRedisToDB(code: string) {
     const exists = await fast_db.exists(`fast_ranking:${code}`)
     if (!exists) {
       console.log(`No data for: ${code}`)
-      return
+      return null
     }
 
     // Take all the items ids from Redis //
@@ -65,6 +58,13 @@ export async function syncRedisToDB(code: string) {
           data: { points },
         })
       )
+    }
+    const votes = await fast_db.hget<bigint>(`ranking:${code}`, 'votes')
+    if (votes) {
+      await db.ranking.update({
+        where: { code: code},
+        data: { votes: { increment: BigInt(votes) } }
+      })
     }
     await db.$transaction(updateQueries)
   } catch (error) {

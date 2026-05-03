@@ -1,5 +1,4 @@
 import { fast_db } from '@/lib/fast_db'
-import { Pair } from '@/app/algorithms/drawings'
 
 // Defining the interfaces for the items and rankings to ensure type safety and better code readability //
 export interface Item {
@@ -10,7 +9,7 @@ export interface Item {
 export interface Ranking {
   code: string
   name: string
-  chosens: Pair
+  votes: bigint
 }
 
 // Function to save an item in the ranking //
@@ -28,13 +27,13 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
       // Hash to store item details //
       pipeline.hset(`item:${item.id.toString()}`, { 
         name: item.name,
-        extractions: 0
       })
     })
 
     // Hash to store ranking details //
     pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
+      votes: ranking.votes
     })
 
     await pipeline.exec()

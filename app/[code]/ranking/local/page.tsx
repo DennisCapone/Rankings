@@ -5,19 +5,17 @@ import { fast_db } from '@/lib/fast_db'
 import { Item } from '@/lib/redisFunctions'
 import { notFound } from 'next/navigation'
 import { syncRedisToDB } from '@/lib/sync'
+import { cookies } from 'next/headers'
 
-export default async function Ranking({ params }: { params: Promise<{ code: string }> }) {
+export default async function LocalRanking({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params   // Awaiting the code parameter from the URL //
 
-  // Update data in Supabase in background //
-  after(() => {
-    syncRedisToDB(code).catch((err) => {
-      console.error(`Errore durante il salvataggio in background per ${code}:`, err)
-    })
-  })
+  // Take the session id //
+  const cookieStore = await cookies()
+  const sessionId = cookieStore.get('session')?.value
 
   // Fetching the raw ranking data from Redis //
-  const rawArray = await fast_db.zrange<string[]>(`fast_ranking:${code}`, 0, -1, { withScores: true, rev: true })
+  const rawArray = await fast_db.zrange<string[]>(`fast_ranking:${code}:${sessionId}`, 0, -1, { withScores: true, rev: true })
   if (!rawArray || rawArray.length === 0) notFound()
   
   // Transforming the raw ranking data into a more usable format //
@@ -39,7 +37,7 @@ export default async function Ranking({ params }: { params: Promise<{ code: stri
   const items: Item[] = (ranking as { member: string, score: number }[]).map((item, index) => {
     return {
       id: BigInt(item.member),
-      name: names[index] as string || 'Sconosciuto',
+      name: names[index] as string || 'Unknown',
       points: item.score,
     }
   })
@@ -47,7 +45,7 @@ export default async function Ranking({ params }: { params: Promise<{ code: stri
 
   return (
     <>
-      <Link href={`/${code}/ranking/local`}><div className='flex justify-center mt-2'><Button textcolor='' bcolor='' text='Classifica locale' color='bg-red-300' /></div></Link>
+      <Link href={`/${code}/ranking`}><div className='flex justify-center mt-2'><Button textcolor='' bcolor='' text='Classifica globale' color='bg-red-300' /></div></Link>
 
       <div className='flex justify-center mt-30 gap-x-5'>
         <div className='flex justify-center h-10 w-70'><h1>nome</h1></div>

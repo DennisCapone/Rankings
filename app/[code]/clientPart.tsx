@@ -13,7 +13,7 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
 
   // Function to fill the queue with new pairs  //
   const fillQueue = async () => {
-    const newPair = await drawing(code) as Pair
+    const newPair = await drawing(code, numPairs) as Pair
     if (newPair) {
       setQueue(prevQueue => [...prevQueue, newPair])
     }
