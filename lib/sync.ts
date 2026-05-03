@@ -59,11 +59,11 @@ export async function syncRedisToDB(code: string) {
         })
       )
     }
-    const votes = await fast_db.hget<bigint>(`ranking:${code}`, 'votes')
+    const votes = await fast_db.hget<number>(`ranking:${code}`, 'votes')
     if (votes) {
       await db.ranking.update({
         where: { code: code},
-        data: { votes: { increment: BigInt(votes) } }
+        data: { votes: { increment: votes } }
       })
     }
     await db.$transaction(updateQueries)

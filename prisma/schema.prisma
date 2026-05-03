@@ -11,7 +11,7 @@ model Ranking {
   creator     String
   public      Boolean  @default(false)
   elements    Int?     @db.SmallInt
-  votes       BigInt   @default(0)
+  votes       Int   @default(0)
   items       Item[]
 }
 model Item {

@@ -9,7 +9,7 @@ export interface Item {
 export interface Ranking {
   code: string
   name: string
-  votes: bigint
+  votes: number
 }
 
 // Function to save an item in the ranking //
@@ -33,7 +33,7 @@ export async function saveInRanking(ranking: Ranking, items: Item[]) {
     // Hash to store ranking details //
     pipeline.hset(`ranking:${ranking.code}`, {
       name: ranking.name,
-      votes: ranking.votes
+      votes: ranking.votes.toString()
     })
 
     await pipeline.exec()
