@@ -31,7 +31,6 @@ export async function addRanking(items: string[], name: string) {
       items: {
         create: items.map(n => ({
           name: n,
-          probability: 100 / items.length
         }))
       }
     }
