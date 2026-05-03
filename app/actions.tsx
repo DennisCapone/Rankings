@@ -28,7 +28,6 @@ export async function addRanking(items: string[], name: string) {
       creator: 'Dennis Capone',
       code: code,
       elements: items.length,
-      completeAt: (items.length * ((items.length - 1) / 2)),
       items: {
         create: items.map(n => ({
           name: n,
