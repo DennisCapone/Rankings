@@ -41,7 +41,7 @@ export default function ClientPart({ code, startingQueue, numPairs }: { code: st
 
   return (
     <>
-      {currentPair.jackpot && <div className='fixed inset-0 border-40 border-orange-500 pointer-events-none z-[9999]'></div>}
+      {currentPair?.jackpot && <div className='fixed inset-0 border-40 border-orange-500 pointer-events-none z-[9999]'></div>}
 
       <Link href={`/${code}/ranking`}><div className='mt-20 ml-10'><Button textcolor='' bcolor='' text='classifica' color='bg-green-500' /></div></Link>
 
