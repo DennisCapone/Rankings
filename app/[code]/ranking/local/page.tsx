@@ -1,10 +1,8 @@
 import Button from '@/components/Button'
 import Link from 'next/link'
-import { after } from 'next/server'
 import { fast_db } from '@/lib/fast_db'
 import { Item } from '@/lib/redisFunctions'
 import { notFound } from 'next/navigation'
-import { syncRedisToDB } from '@/lib/sync'
 import { cookies } from 'next/headers'
 
 export default async function LocalRanking({ params }: { params: Promise<{ code: string }> }) {

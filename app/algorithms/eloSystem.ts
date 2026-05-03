@@ -21,14 +21,17 @@ export async function eloSystem(code: string, token: string, aWinned: boolean) {
   if (idA == null || idB == null) return null
 
   // Fetch the current pair of players from Redis and their points //
-  const [ pointsA, pointsB, iPointsA, iPointsB ] = await Promise.all([
+  const [ pointsA, pointsB ] = await Promise.all([
     fast_db.zscore(`fast_ranking:${code}`, idA.toString()),
     fast_db.zscore(`fast_ranking:${code}`, idB.toString()),
-    fast_db.zscore(`fast_ranking:${code}:${sessionId}`, idA.toString()) || 1000,
-    fast_db.zscore(`fast_ranking:${code}:${sessionId}`, idB.toString()) || 1000
   ])
   if (pointsA === null || pointsB === null) return null
-  if (iPointsA === null || iPointsB === null) return null
+  let [ iPointsA, iPointsB ] = await Promise.all([
+    fast_db.zscore(`fast_ranking:${code}:${sessionId}`, idA.toString()),
+    fast_db.zscore(`fast_ranking:${code}:${sessionId}`, idB.toString()),
+  ])
+  if (iPointsA === null) iPointsA = 1000
+  if (iPointsB === null) iPointsB = 1000
 
   // Elo algorithm //
   const expA = 1 / (1 + Math.pow(10, (pointsB - pointsA) / 400))
