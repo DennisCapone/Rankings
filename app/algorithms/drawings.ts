@@ -42,8 +42,8 @@ export async function drawing(code: string, numPairs: number) {
 
   // Decide if draw a jackpot based on probability //
   const votes = await fast_db.hget<number>(`ranking:${code}`, 'votes')
-  if (!votes) return null
-  const jackpot = (Math.random() * 100 <= probability) && (votes >= numPairs * 0.33)
+  if (votes === null) return null
+  const jackpot = ((Math.random() * 100 <= probability) && (votes >= numPairs * 0.33))
 
   // Setting the last jackpot //
   fast_db.pipeline().hset(`ranking:${code}:${sessionId}`, {
